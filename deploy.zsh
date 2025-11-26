@@ -45,6 +45,12 @@ function deploy() {
     msg "  • Con @latest: Despliega automáticamente la última versión"
     msg "  • Con @version específica: Valida y despliega esa versión"
     msg "  • Modo --dry-run: Simula el proceso sin hacer cambios reales"
+    msg --blank
+    msg "Cómo obtener el token CSRF:"
+    msg "  1. Ejecuta: qs-login (abre Quicksilver en el navegador)"
+    msg "  2. Inicia sesión con tus credenciales"
+    msg "  3. Abre DevTools (Cmd+Option+I) > Application > Cookies"
+    msg "  4. Copia el valor de 'csrftoken'"
   }
   
   # Verificar --help como primer argumento (sin servicio)
@@ -107,8 +113,35 @@ function deploy() {
     esac
   done
   
-  local CSRF_TOKEN="Z2eDgiGDInqQyiixQZKUwGxIgp0maddapXHCpmP3lcd8ee7psAUTLG41kDnSJsED"
-  local SESSION_ID="lyvj0k9zcys4sogdkailsilpcb2sug6a"
+  local QUICKSILVER_URL="https://quicksilver-es.prod.ok-cloud.net/login/?next=/cd/react-api/check-auth-status/"
+  local CSRF_TOKEN=""
+  local SESSION_ID=""
+
+  msg "Abriendo Quicksilver en el navegador..." --info
+  msg --blank
+  msg "Pasos para obtener tus tokens:" --dim
+  msg "1. Inicia sesión con tus credenciales de Santander" --dim --tab 1
+  msg "2. Una vez autenticado, abre las DevTools (Cmd+Option+I)" --dim --tab 1
+  msg "3. Ve a la pestaña 'Application' > 'Cookies'" --dim --tab 1
+  msg "4. Busca y copia estos valores:" --dim --tab 1
+  msg "   • csrftoken" --dim --tab 2
+  msg "   • sessionid" --dim --tab 2
+  msg --blank
+  
+  # Abrir en el navegador predeterminado
+  open "$QUICKSILVER_URL"
+
+  # Solicitar cookies al usuario
+  msg "Token: " --no-newline
+  read CSRF_TOKEN
+  
+  msg "ID de la sesión: " --no-newline
+  read SESSION_ID
+
+  if [[ -z "$CSRF_TOKEN" ]] || [[ -z "$SESSION_ID" ]]; then
+    msg "Error: Debes proporcionar ambos datos" --error
+    return 1
+  fi
 
   # Array asociativo de entornos a desplegar
   declare -A ENVIRONMENTS=(
@@ -141,7 +174,7 @@ function deploy() {
       -H 'accept: application/json, text/plain, */*' \
       -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
       -H 'priority: u=1, i' \
-      -b "sessionid=$SESSION_ID")
+      -b "csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID")
 
     # Extraer el código HTTP
     local VERSIONS_HTTP_STATUS=$(echo "$VERSIONS_RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
@@ -152,6 +185,11 @@ function deploy() {
       msg "Error de conexión" --error
       msg "No se pudo conectar al servidor de Quicksilver." --error --no-icon
       msg "Verifica que estas conectado a la VPN y que el servidor esta accesible" --dim
+      return 1
+    elif [ "$VERSIONS_HTTP_STATUS" = "401" ] || [ "$VERSIONS_HTTP_STATUS" = "403" ]; then
+      msg "Token CSRF inválido o expirado" --error
+      msg "El token de autenticación ha expirado o es inválido." --dim
+      msg "Por favor, obtén un nuevo token CSRF y actualiza el script." --dim
       return 1
     elif [ "$VERSIONS_HTTP_STATUS" != "200" ]; then
       msg "Error al obtener versiones disponibles" --error
@@ -220,19 +258,20 @@ function deploy() {
       local RESPONSE=$(run_with_spinner \
         --message "Desplegando en $ENV_NAME" \
         --command "curl -s -w '\nHTTP_STATUS:%{http_code}' 'https://quicksilver-es.prod.ok-cloud.net/cd/api/deployment/new' \
-          -H 'accept: application/json, text/plain, */*' \
           -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
+          -H 'accept: application/json, text/plain, */*' \
           -H 'content-type: application/json' \
-          -b 'sessionid=$SESSION_ID' \
           -H 'origin: https://quicksilver-es.prod.ok-cloud.net' \
           -H 'priority: u=1, i' \
+          -H 'referer: https://quicksilver-es.prod.ok-cloud.net/deployment/new' \
           -H 'x-csrftoken: $CSRF_TOKEN' \
+          -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' \
           --data-raw '{\"application\":138,\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
       
       # Extraer el código HTTP
       local HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
       local BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS/d')
-      
+
       # Analizar el tipo de error
       if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
         SUCCESSFUL_DEPLOYMENTS+=("$ENV_NAME")
@@ -247,13 +286,13 @@ function deploy() {
         # Detectar errores específicos
         if [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
           ABORT_DEPLOY=true
-          msg "Token CSRF inválido o expirado" --error --no-icon --tab 1
-          msg "El token de autenticación ha expirado o es inválido." --dim --tab 1
-          msg "Por favor, obtén un nuevo token CSRF y actualiza el script." --dim --tab 1
+          msg "Token CSRF inválido o expirado" --error
+          msg "El token de autenticación ha expirado o es inválido." --dim
+          msg "Por favor, obtén un nuevo token CSRF y actualiza el script." --dim
           break
         else
           msg "Error en deployment en $ENV_NAME" --error
-          msg "Status: $HTTP_STATUS" --dim --tab 1
+          msg "Status: $HTTP_STATUS" --dim
         fi
       fi
       
