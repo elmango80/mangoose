@@ -14,7 +14,7 @@ Colección completa de funciones y utilidades para Zsh organizadas por módulos 
 - 🔍 **Búsqueda y destrucción** recursiva de directorios
 - 💯 **+90 aliases** para comandos comunes
 
-## � Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
 zsh-functions/
@@ -45,7 +45,7 @@ zsh-functions/
     └── WIREMOCK.md
 ```
 
-## �📚 Documentación por Módulo
+## 📚 Documentación por Módulo
 
 Cada módulo tiene su propia documentación detallada:
 
