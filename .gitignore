@@ -1,3 +1,6 @@
+# Archivos de configuración local (información sensible)
+.env
+
 # macOS
 .DS_Store
 .AppleDouble
