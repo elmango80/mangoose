@@ -72,11 +72,35 @@ Cada módulo tiene su propia documentación detallada:
 
 ## 📦 Instalación
 
+### Instalación Automática (Recomendado)
+
+```bash
+# Descargar e instalar con un comando
+curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh | zsh
+```
+
+O descarga primero y luego ejecuta:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh -o /tmp/install-zsh-functions.sh
+chmod +x /tmp/install-zsh-functions.sh
+/tmp/install-zsh-functions.sh
+```
+
+El instalador:
+- ✅ Clona el repositorio en `~/.config/zsh/functions`
+- ✅ Hace backup de tu `.zshrc`
+- ✅ Agrega la configuración necesaria
+- ✅ Respeta configuraciones existentes
+- ✅ Permite actualizar o reinstalar
+
+### Instalación Manual
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/elmango80/zsh-functions.git ~/.config/zsh/functions
 
-# Agregar a tu .zshrc (carga automática)
+# Agregar a tu .zshrc (carga en orden correcto)
 cat >> ~/.zshrc << 'EOF'
 # Cargar Zsh Functions (orden de dependencias)
 source ~/.config/zsh/functions/core/colors.zsh
@@ -94,10 +118,10 @@ EOF
 source ~/.zshrc
 ```
 
-### Instalación Simplificada (Loop)
+### Instalación con Loop (Alternativa)
 
 ```bash
-# Alternativa: cargar todos los archivos automáticamente
+# Cargar todos los módulos automáticamente
 cat >> ~/.zshrc << 'EOF'
 # Cargar Zsh Functions en orden
 for module_dir in core git productivity deployment testing aliases; do
@@ -108,9 +132,9 @@ done
 EOF
 ```
 
-### Orden de Carga Importante
+### ⚠️ Orden de Carga Importante
 
-⚠️ Es crucial cargar en este orden debido a dependencias:
+Es crucial cargar en este orden debido a dependencias:
 
 1. **core/** - Primero (base para todo)
    - `colors.zsh` → `utils.zsh` → `print.zsh` → `spinners.zsh`
@@ -119,6 +143,14 @@ EOF
 4. **deployment/** - Depende de core
 5. **testing/** - Depende de core
 6. **aliases/** - Último (usa funciones de otros módulos)
+
+### Actualizar
+
+```bash
+cd ~/.config/zsh/functions
+git pull
+source ~/.zshrc
+```
 
 ## ⚡ Inicio Rápido
 
