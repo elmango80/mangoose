@@ -88,6 +88,7 @@ chmod +x /tmp/install-zsh-functions.sh
 ```
 
 El instalador:
+
 - ✅ Clona el repositorio en `~/.config/zsh/functions`
 - ✅ Hace backup de tu `.zshrc`
 - ✅ Agrega la configuración necesaria
