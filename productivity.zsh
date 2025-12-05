@@ -156,14 +156,48 @@ function goto() {
 function phoenix() {
   local hard_mode=0
 
+  # Función interna para mostrar ayuda
+  show_help() {
+    msg "Usage: phoenix [OPTIONS]"
+    msg "Reinicia completamente un proyecto Node.js eliminando dependencias y reconstruyendo."
+    msg --blank
+    msg "Opciones:"
+    msg "  --hard                      Modo agresivo: elimina también yarn.lock, caché y enlaces yalc"
+    msg "  -h, --help                  Muestra esta ayuda"
+    msg --blank
+    msg "Descripción:"
+    msg "  Elimina node_modules, dist, y .yalc, luego reinstala las dependencias."
+    msg "  En modo --hard también elimina yarn.lock, limpia la caché de yarn y"
+    msg "  remueve todos los enlaces de yalc."
+    msg --blank
+    msg "Ejemplos:"
+    msg "  phoenix                     # Limpieza estándar"
+    msg "  phoenix --hard              # Limpieza agresiva completa"
+    msg "  phoenix --help              # Muestra esta ayuda"
+    msg --blank
+    msg "Nota:"
+    msg "  Requiere que exista un archivo package.json en el directorio actual."
+  }
+
+  # Verificar --help como primer argumento
+  if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    show_help
+    return 0
+  fi
+
   # Procesar parámetros
   while [[ $# -gt 0 ]]; do
     case $1 in
       --hard)
         hard_mode=1
         ;;
+      --help|-h)
+        show_help
+        return 0
+        ;;
       *)
         msg "Unexpected argument $1" --error
+        msg "Usa 'phoenix --help' para más información"
         return 1
         ;;
     esac
