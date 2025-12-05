@@ -8,7 +8,7 @@ Ejecuta un comando mostrando un spinner animado mientras se procesa.
 
 ### Uso
 
-```bash
+```zsh
 run_with_spinner --command "tu_comando" --message "Mensaje..." [OPTIONS]
 ```
 
@@ -42,7 +42,7 @@ run_with_spinner --command "tu_comando" --message "Mensaje..." [OPTIONS]
 
 ### Ejemplos Básicos
 
-```bash
+```zsh
 # Ejemplo simple
 run_with_spinner --command "sleep 3" --message "Procesando..."
 
@@ -58,7 +58,7 @@ run_with_spinner --command "sleep 2" --message "Cargando..." --no-newline
 
 ### Ejemplos Avanzados
 
-```bash
+```zsh
 # Comando que puede fallar
 run_with_spinner \
   --command "npm test" \
@@ -102,7 +102,7 @@ run_with_spinner \
 
 ### Salida de Ejemplo
 
-```bash
+```zsh
 # Durante ejecución
   ⠋ Instalando dependencias...
 
@@ -115,7 +115,7 @@ run_with_spinner \
 
 ### Función de Test
 
-```bash
+```zsh
 # Ver demostración de spinners
 run_with_spinner --test
 ```
@@ -128,7 +128,7 @@ Esta función ejecuta 3 ejemplos:
 
 ### Captura de Output
 
-```bash
+```zsh
 # Capturar salida del comando
 output=$(run_with_spinner --command "ls -la" --message "Listando archivos...")
 echo "$output"
@@ -188,6 +188,6 @@ El comando puede estar esperando input. Usa solo con comandos no-interactivos.
 
 Incrementa el `--delay` para reducir actualizaciones:
 
-```bash
+```zsh
 run_with_spinner --command "..." --message "..." --delay 0.2
 ```

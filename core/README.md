@@ -80,7 +80,7 @@ Es importante cargar estos archivos en este orden:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar todo el módulo core
 source ~/.config/zsh/functions/core/colors.zsh
 source ~/.config/zsh/functions/core/utils.zsh

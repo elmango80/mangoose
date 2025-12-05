@@ -4,7 +4,7 @@ Colección de aliases útiles para mejorar la productividad en la terminal.
 
 ## 📂 Navegación
 
-```bash
+```zsh
 cdh              # cd $HOME
 cdc              # cd $HOME/code
 cdw              # cd $HOME/code/grupo-santander-ods
@@ -13,7 +13,7 @@ ls               # ls -GA (con colores y sin . ni ..)
 
 ## 📦 NPM
 
-```bash
+```zsh
 na               # npm add
 ni               # npm install
 nig              # npm install --global
@@ -29,7 +29,7 @@ nr               # npm remove
 
 ## 🧶 Yarn
 
-```bash
+```zsh
 y                # yarn
 yi               # yarn install
 ya               # yarn add
@@ -47,7 +47,7 @@ yx               # yarn dlx
 
 ## 🏢 Grupo Santander
 
-```bash
+```zsh
 eth0mtu          # sudo ip link set dev eth0 mtu 1360
 app              # cd app
 example          # cd example
@@ -63,27 +63,27 @@ npm:jfrog        # npm login --auth-type=web
 
 ## 🔍 FZF
 
-```bash
+```zsh
 gswz             # Selector interactivo de ramas con git switch
 ```
 
 ## ⚙️ ZSH
 
-```bash
+```zsh
 zrc              # Editar .zshrc
 zp               # Editar .zprofile
 ```
 
 ## 🍺 Homebrew
 
-```bash
+```zsh
 brew:cask:on     # Configurar instalación de casks en ~/Applications
 brew:cask:off    # Desactivar configuración de casks
 ```
 
 ## 🧹 Limpieza de Directorios
 
-```bash
+```zsh
 sad              # seek_and_destroy
 sad:node_modules # Buscar y eliminar node_modules (verbose)
 sad:dist         # Buscar y eliminar dist (verbose)
@@ -93,7 +93,7 @@ sad:all          # Eliminar node_modules, dist y .yalc (sin confirmación)
 
 ## 🔀 Git
 
-```bash
+```zsh
 gcls             # clean_repository - Limpiar ramas huérfanas
 gcls:all         # clean_repositories - Limpiar en todos los repos
 gmup             # update_master_repo - Actualizar master/main
@@ -105,7 +105,7 @@ gmn              # git merge --no-edit
 
 ## 🛠️ Utilidades
 
-```bash
+```zsh
 goto             # Navegador interactivo de directorios
 deploy           # Sistema de deployment a Quicksilver
 sudo             # sudo (con soporte para aliases)

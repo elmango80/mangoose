@@ -8,7 +8,7 @@ Función principal para mostrar mensajes con formato, colores e iconos.
 
 ### Uso
 
-```bash
+```zsh
 msg "Mensaje" [TIPO] [OPCIONES]
 msg [TIPO] "Mensaje" [OPCIONES]
 ```
@@ -37,7 +37,7 @@ msg [TIPO] "Mensaje" [OPCIONES]
 
 ### Ejemplos Básicos
 
-```bash
+```zsh
 # Mensaje simple
 msg "Iniciando proceso..."
 
@@ -54,7 +54,7 @@ msg "Error al conectar" --error
 
 ### Ejemplos con Opciones
 
-```bash
+```zsh
 # Con indentación
 msg "Nivel 1"
 msg "Nivel 2" --tab 1
@@ -79,7 +79,7 @@ msg "Después"
 
 ### Ejemplos Avanzados
 
-```bash
+```zsh
 # Progreso indentado
 msg "Iniciando deployment" --info
 msg "Verificando conexión..." --tab 1
@@ -104,7 +104,7 @@ msg "Descripción del proceso..." --dim
 
 ### Uso en Scripts
 
-```bash
+```zsh
 # Función de validación
 validate_input() {
   if [[ -z "$1" ]]; then
@@ -160,7 +160,7 @@ show_section() {
 
 La opción `--tab N` aplica `N` niveles de indentación:
 
-```bash
+```zsh
 msg "Nivel 0"
 msg "Nivel 1" --tab 1    # 2 espacios
 msg "Nivel 2" --tab 2    # 4 espacios
@@ -177,7 +177,7 @@ La función valida:
 
 ### Mensajes de Error
 
-```bash
+```zsh
 # Sin texto
 msg --error
 # ❌ Error: Message text is required
@@ -193,7 +193,7 @@ Función auxiliar para imprimir espacios de indentación.
 
 ### Uso
 
-```bash
+```zsh
 print_indentation [N]
 ```
 
@@ -204,7 +204,7 @@ print_indentation [N]
 
 ### Ejemplo
 
-```bash
+```zsh
 print_indentation 0    # "" (sin espacios)
 print_indentation 1    # "  " (2 espacios)
 print_indentation 2    # "    " (4 espacios)
@@ -213,7 +213,7 @@ print_indentation 3    # "      " (6 espacios)
 
 ### Uso Directo
 
-```bash
+```zsh
 # Imprimir con indentación
 print_indentation 2
 echo "Texto indentado"
@@ -231,7 +231,7 @@ Función auxiliar interna para manejar stdout/stderr.
 
 ### Uso Interno
 
-```bash
+```zsh
 _output_message "mensaje" 0    # a stdout
 _output_message "mensaje" 1    # a stderr
 ```
@@ -249,7 +249,7 @@ Esta es una función interna. Usa `msg` para uso normal.
 
 ### Progress Report
 
-```bash
+```zsh
 msg "==========================" --dim
 msg "Iniciando proceso" --info --no-icon
 msg "==========================" --dim
@@ -269,7 +269,7 @@ msg "Proceso completado exitosamente" --success
 
 ### Error Handling
 
-```bash
+```zsh
 if ! command; then
   msg "Error ejecutando comando" --error --to-stderr
   msg "Detalles del error:" --tab 1 --dim
@@ -280,7 +280,7 @@ fi
 
 ### Interactive Prompts
 
-```bash
+```zsh
 msg "¿Desea continuar? (y/n): " --no-newline
 read answer
 if [[ "$answer" == "y" ]]; then
@@ -292,7 +292,7 @@ fi
 
 ### Logging Levels
 
-```bash
+```zsh
 # Según nivel de verbosidad
 VERBOSE=2
 
@@ -312,7 +312,7 @@ VERBOSE=2
 
 ## 🎨 Personalización
 
-```bash
+```zsh
 # Crear funciones wrapper personalizadas
 err() { msg "$@" --error; }
 warn() { msg "$@" --warning; }
@@ -338,7 +338,7 @@ Esta función es usada por:
 
 ## 🧪 Testing
 
-```bash
+```zsh
 # Probar todos los tipos
 msg "Normal message"
 msg "Success message" --success

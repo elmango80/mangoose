@@ -16,7 +16,7 @@ Herramientas para gestión de proyectos y navegación.
 
 Busca y elimina directorios específicos de forma recursiva.
 
-```bash
+```zsh
 seek_and_destroy --dir node_modules
 seek_and_destroy --dir dist --no-confirm
 seek_and_destroy --dir .yalc --verbose
@@ -34,7 +34,7 @@ seek_and_destroy --dir .yalc --verbose
 
 Navegador interactivo de directorios con selector visual.
 
-```bash
+```zsh
 goto                              # Desde directorio actual
 goto --base-dir ~/code            # Desde directorio específico
 goto --depth 3                    # Profundidad de búsqueda
@@ -51,7 +51,7 @@ goto --depth 3                    # Profundidad de búsqueda
 
 Reinicia completamente un proyecto Node.js.
 
-```bash
+```zsh
 phoenix              # Limpieza estándar
 phoenix --hard       # Limpieza agresiva completa
 ```
@@ -84,7 +84,7 @@ Herramientas externas:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar módulo Productivity
 source ~/.config/zsh/functions/productivity/productivity.zsh
 ```
@@ -93,7 +93,7 @@ source ~/.config/zsh/functions/productivity/productivity.zsh
 
 ### Limpieza de Proyecto
 
-```bash
+```zsh
 # Limpiar dependencias
 phoenix
 
@@ -106,7 +106,7 @@ sad:all
 
 ### Navegación Rápida
 
-```bash
+```zsh
 # Navegar a un proyecto
 goto --base-dir ~/code/projects --depth 3
 
@@ -115,7 +115,7 @@ goto --base-dir ~/code/projects --depth 3
 
 ### Mantenimiento
 
-```bash
+```zsh
 # Eliminar builds antiguos
 seek_and_destroy --dir dist --verbose
 

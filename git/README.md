@@ -16,7 +16,7 @@ Funciones avanzadas para limpieza de ramas y sincronización de repositorios.
 
 Limpia ramas locales que han sido eliminadas del remoto.
 
-```bash
+```zsh
 clean_repository              # Limpiar ramas huérfanas
 clean_repository --dry-run    # Vista previa
 clean_repository --demo       # Simulación con delay
@@ -26,7 +26,7 @@ clean_repository --demo       # Simulación con delay
 
 Ejecuta `clean_repository` en múltiples repositorios dentro de un directorio.
 
-```bash
+```zsh
 clean_repositories            # Limpiar todos los repos
 clean_repositories --dry-run  # Vista previa en todos
 ```
@@ -35,7 +35,7 @@ clean_repositories --dry-run  # Vista previa en todos
 
 Actualiza la rama principal (master/main) desde el remoto.
 
-```bash
+```zsh
 update_master_repo            # Actualizar master/main
 ```
 
@@ -43,7 +43,7 @@ update_master_repo            # Actualizar master/main
 
 Ejecuta `update_master_repo` en múltiples repositorios.
 
-```bash
+```zsh
 update_master_repos           # Actualizar todos los repos
 ```
 
@@ -51,7 +51,7 @@ update_master_repos           # Actualizar todos los repos
 
 Función auxiliar que verifica si el directorio actual es un repositorio Git.
 
-```bash
+```zsh
 if is_git_repository; then
   # Código que requiere Git
 fi
@@ -66,7 +66,7 @@ Requiere:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar módulo Git
 source ~/.config/zsh/functions/git/git.zsh
 ```
@@ -75,7 +75,7 @@ source ~/.config/zsh/functions/git/git.zsh
 
 Definidos en `aliases/aliases.zsh`:
 
-```bash
+```zsh
 gcls         # clean_repository
 gcls:all     # clean_repositories
 gmup         # update_master_repo

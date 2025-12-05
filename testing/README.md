@@ -16,13 +16,13 @@ Gestión de servidor WireMock para mocking de APIs.
 
 Inicia un servidor WireMock standalone para mocking y testing de APIs.
 
-```bash
+```zsh
 wiremock_run_server [OPTIONS]
 ```
 
 ## Opciones
 
-```bash
+```zsh
 -p, --port PORT      # Puerto del servidor (default: 8000)
 -j, --jar PATH       # Ruta al JAR de WireMock
 -s, --stubs PATH     # Ruta al directorio de stubs
@@ -32,7 +32,7 @@ wiremock_run_server [OPTIONS]
 
 ## Configuración por Defecto
 
-```bash
+```zsh
 Puerto:     8000
 JAR:        ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar
 Stubs Dir:  ./src/main/resources/stubs/
@@ -40,7 +40,7 @@ Stubs Dir:  ./src/main/resources/stubs/
 
 ## Ejemplos de Uso
 
-```bash
+```zsh
 # Puerto por defecto
 wiremock_run_server
 
@@ -73,7 +73,7 @@ Una vez corriendo, disponibles en:
 
 ### Ejemplos de Admin API
 
-```bash
+```zsh
 # Verificar salud
 curl http://localhost:8000/__admin/health
 
@@ -126,7 +126,7 @@ Requiere:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar módulo Testing
 source ~/.config/zsh/functions/testing/wiremock.zsh
 ```
@@ -135,7 +135,7 @@ source ~/.config/zsh/functions/testing/wiremock.zsh
 
 Definido en `aliases/aliases.zsh`:
 
-```bash
+```zsh
 run:wiremock    # wiremock_run_server
 ```
 
@@ -155,7 +155,7 @@ run:wiremock    # wiremock_run_server
 
 ### Desarrollo Local
 
-```bash
+```zsh
 # Iniciar mock server para desarrollo
 wiremock_run_server --port 8080
 
@@ -164,7 +164,7 @@ wiremock_run_server --port 8080
 
 ### Testing de Integración
 
-```bash
+```zsh
 # Iniciar con stubs específicos
 wiremock_run_server \
   --stubs ./test/fixtures/stubs \
@@ -176,7 +176,7 @@ npm test
 
 ### Debugging
 
-```bash
+```zsh
 # Ver todos los requests recibidos
 curl http://localhost:8000/__admin/requests | jq
 

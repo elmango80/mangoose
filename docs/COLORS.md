@@ -6,14 +6,14 @@ Sistema de definiciones de colores y estilos para terminal.
 
 ### Colores Estándar
 
-```bash
+```zsh
 BLACK    RED      GREEN    YELLOW
 BLUE     PURPLE   CYAN     WHITE
 ```
 
 ### Ejemplo de Uso
 
-```bash
+```zsh
 echo -e "${RED}Texto en rojo${NC}"
 echo -e "${GREEN}Texto en verde${NC}"
 echo -e "${BLUE}Texto en azul${NC}"
@@ -23,7 +23,7 @@ echo -e "${BLUE}Texto en azul${NC}"
 
 ### Colores Light
 
-```bash
+```zsh
 LIGHT_BLACK    # Gris oscuro
 LIGHT_RED      LIGHT_GREEN    LIGHT_YELLOW
 LIGHT_BLUE     LIGHT_PURPLE   LIGHT_CYAN
@@ -32,14 +32,14 @@ LIGHT_WHITE
 
 ### Aliases
 
-```bash
+```zsh
 GRAY    # Alias para LIGHT_BLACK
 GREY    # Alias para LIGHT_BLACK
 ```
 
 ### Ejemplo
 
-```bash
+```zsh
 echo -e "${LIGHT_RED}Rojo brillante${NC}"
 echo -e "${GRAY}Texto gris${NC}"
 ```
@@ -48,14 +48,14 @@ echo -e "${GRAY}Texto gris${NC}"
 
 ### Bold Colors
 
-```bash
+```zsh
 BOLD_BLACK     BOLD_RED       BOLD_GREEN     BOLD_YELLOW
 BOLD_BLUE      BOLD_PURPLE    BOLD_CYAN      BOLD_WHITE
 ```
 
 ### Ejemplo
 
-```bash
+```zsh
 echo -e "${BOLD_RED}Error crítico${NC}"
 echo -e "${BOLD_GREEN}✓ Éxito${NC}"
 ```
@@ -76,7 +76,7 @@ echo -e "${BOLD_GREEN}✓ Éxito${NC}"
 
 ### Ejemplo
 
-```bash
+```zsh
 echo -e "${BOLD}Negrita${NC}"
 echo -e "${ITALIC}Cursiva${NC}"
 echo -e "${UNDERLINE}Subrayado${NC}"
@@ -85,7 +85,7 @@ echo -e "${DIM}Atenuado${NC}"
 
 ### Combinación de Estilos
 
-```bash
+```zsh
 echo -e "${BOLD}${RED}Rojo en negrita${NC}"
 echo -e "${ITALIC}${BLUE}Azul en cursiva${NC}"
 echo -e "${UNDERLINE}${GREEN}Verde subrayado${NC}"
@@ -95,7 +95,7 @@ echo -e "${UNDERLINE}${GREEN}Verde subrayado${NC}"
 
 ### Paleta Extendida
 
-```bash
+```zsh
 BLUE_DODGER    # Azul dodger
 CORAL          # Coral
 GOLD           # Dorado
@@ -110,7 +110,7 @@ VIOLET         # Violeta
 
 ### Ejemplo
 
-```bash
+```zsh
 echo -e "${ORANGE}Texto naranja${NC}"
 echo -e "${TURQUOISE}Texto turquesa${NC}"
 echo -e "${PINK}Texto rosa${NC}"
@@ -120,7 +120,7 @@ echo -e "${PINK}Texto rosa${NC}"
 
 ### Colores RGB Personalizados
 
-```bash
+```zsh
 RGB_CORAL      # rgb(255, 127, 80)
 RGB_FOREST     # rgb(34, 139, 34) - Verde bosque
 RGB_GOLD       # rgb(255, 215, 0)
@@ -131,7 +131,7 @@ RGB_SUNSET     # rgb(255, 94, 77) - Naranja atardecer
 
 ### Sintaxis RGB Custom
 
-```bash
+```zsh
 # Formato: \033[38;2;R;G;Bm
 CUSTOM_COLOR='\033[38;2;100;200;150m'
 echo -e "${CUSTOM_COLOR}Color personalizado${NC}"
@@ -139,7 +139,7 @@ echo -e "${CUSTOM_COLOR}Color personalizado${NC}"
 
 ### Ejemplo
 
-```bash
+```zsh
 echo -e "${RGB_SUNSET}Atardecer naranja${NC}"
 echo -e "${RGB_SKY}Cielo azul${NC}"
 echo -e "${RGB_FOREST}Bosque verde${NC}"
@@ -149,14 +149,14 @@ echo -e "${RGB_FOREST}Bosque verde${NC}"
 
 ### Variables de Reset
 
-```bash
+```zsh
 NC      # No Color - Reset to default
 RESET   # Alias para NC
 ```
 
 ### Uso
 
-```bash
+```zsh
 # Siempre resetear después de aplicar color
 echo -e "${RED}Rojo${NC} Normal ${BLUE}Azul${NC}"
 
@@ -170,7 +170,7 @@ echo -e "${BOLD}${GREEN}Texto importante${NC}"
 
 Función para visualizar todos los colores disponibles.
 
-```bash
+```zsh
 test_colors
 ```
 
@@ -190,13 +190,13 @@ Muestra secciones organizadas de:
 
 ### Estructura Básica
 
-```bash
+```zsh
 echo -e "${COLOR}texto${NC}"
 ```
 
 ### Ejemplos Prácticos
 
-```bash
+```zsh
 # Mensajes de estado
 echo -e "${GREEN}✓${NC} Operación exitosa"
 echo -e "${RED}✗${NC} Error encontrado"
@@ -220,7 +220,7 @@ echo -e "${BOLD}${UNDERLINE}${BLUE}Título Importante${NC}"
 
 ### 1. Siempre Resetear
 
-```bash
+```zsh
 # ✅ Correcto
 echo -e "${RED}Error${NC}"
 
@@ -230,7 +230,7 @@ echo -e "${RED}Error"
 
 ### 2. Usar Variables Semánticas
 
-```bash
+```zsh
 # ✅ Mejor
 SUCCESS_COLOR="${GREEN}"
 ERROR_COLOR="${RED}"
@@ -242,7 +242,7 @@ echo -e "${GREEN}Éxito${NC}"
 
 ### 3. Compatibilidad
 
-```bash
+```zsh
 # Verificar soporte de color
 if [[ -t 1 ]]; then
   # Terminal interactiva - usar colores
@@ -255,7 +255,7 @@ fi
 
 ### 4. Legibilidad
 
-```bash
+```zsh
 # ✅ Clara separación
 echo -e "${BOLD}${RED}Error:${NC} ${DIM}Descripción del error${NC}"
 
@@ -283,7 +283,7 @@ Estas variables se usan en:
 
 ## 🧪 Testing
 
-```bash
+```zsh
 # Probar todos los colores
 test_colors
 

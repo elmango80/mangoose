@@ -8,7 +8,7 @@ Limpia ramas locales que han sido eliminadas del remoto.
 
 ### Uso
 
-```bash
+```zsh
 clean_repository [OPTIONS]
 ```
 
@@ -29,7 +29,7 @@ Esta función:
 
 ### Ejemplos
 
-```bash
+```zsh
 clean_repository                  # Limpiar ramas huérfanas
 clean_repository --dry-run        # Ver qué se eliminaría
 clean_repository --demo           # Simular eliminación
@@ -38,7 +38,7 @@ clean_repository --demo --dry-run # Preview y simulación
 
 ### Alias
 
-```bash
+```zsh
 gcls    # Atajo para clean_repository
 ```
 
@@ -48,7 +48,7 @@ Ejecuta `clean_repository` en múltiples repositorios dentro de un directorio.
 
 ### Uso
 
-```bash
+```zsh
 clean_repositories [OPTIONS]
 ```
 
@@ -58,14 +58,14 @@ Acepta las mismas opciones que `clean_repository`: `--dry-run`, `--demo`, `--hel
 
 ### Ejemplos
 
-```bash
+```zsh
 clean_repositories                # Limpiar todos los repos
 clean_repositories --dry-run      # Vista previa en todos los repos
 ```
 
 ### Alias
 
-```bash
+```zsh
 gcls:all    # Atajo para clean_repositories
 ```
 
@@ -75,7 +75,7 @@ Actualiza la rama principal (master/main) desde el remoto.
 
 ### Uso
 
-```bash
+```zsh
 update_master_repo
 ```
 
@@ -92,13 +92,13 @@ Esta función:
 
 ### Ejemplos
 
-```bash
+```zsh
 update_master_repo    # Actualizar master/main
 ```
 
 ### Alias
 
-```bash
+```zsh
 gmup    # Atajo para update_master_repo
 ```
 
@@ -108,19 +108,19 @@ Ejecuta `update_master_repo` en múltiples repositorios dentro de un directorio.
 
 ### Uso
 
-```bash
+```zsh
 update_master_repos
 ```
 
 ### Ejemplos
 
-```bash
+```zsh
 update_master_repos    # Actualizar master/main en todos los repos
 ```
 
 ### Alias
 
-```bash
+```zsh
 gmup:all    # Atajo para update_master_repos
 ```
 
@@ -130,7 +130,7 @@ Función auxiliar que verifica si el directorio actual es un repositorio Git.
 
 ### Uso
 
-```bash
+```zsh
 if is_git_repository; then
   # Código que requiere un repositorio Git
 fi

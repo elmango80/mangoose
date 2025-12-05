@@ -8,7 +8,7 @@ Busca y elimina directorios específicos de forma recursiva.
 
 ### Uso
 
-```bash
+```zsh
 seek_and_destroy [OPTIONS]
 ```
 
@@ -21,7 +21,7 @@ seek_and_destroy [OPTIONS]
 
 ### Ejemplos
 
-```bash
+```zsh
 seek_and_destroy --dir node_modules              # Buscar y eliminar node_modules
 seek_and_destroy --dir dist --no-confirm         # Eliminar dist sin preguntar
 seek_and_destroy --dir .yalc --verbose           # Eliminar .yalc con detalles
@@ -29,7 +29,7 @@ seek_and_destroy --dir .yalc --verbose           # Eliminar .yalc con detalles
 
 ### Aliases relacionados
 
-```bash
+```zsh
 sad                  # seek_and_destroy
 sad:node_modules     # Eliminar node_modules (verbose)
 sad:dist             # Eliminar dist (verbose)
@@ -47,7 +47,7 @@ Navegador interactivo de directorios con selector visual.
 
 ### Uso
 
-```bash
+```zsh
 goto [OPCIONES]
 ```
 
@@ -59,7 +59,7 @@ goto [OPCIONES]
 
 ### Ejemplos
 
-```bash
+```zsh
 goto                                # Navegar desde directorio actual
 goto --base-dir ~/code              # Navegar desde ~/code
 goto --depth 3                      # Buscar hasta 3 niveles de profundidad
@@ -88,7 +88,7 @@ Reinicia completamente un proyecto Node.js eliminando dependencias y reconstruye
 
 ### Uso
 
-```bash
+```zsh
 phoenix [OPTIONS]
 ```
 
@@ -99,7 +99,7 @@ phoenix [OPTIONS]
 
 ### Ejemplos
 
-```bash
+```zsh
 phoenix              # Limpieza estándar
 phoenix --hard       # Limpieza agresiva completa
 ```

@@ -2,13 +2,24 @@
 
 Funciones para gestionar servidores WireMock para mocking de APIs.
 
+## ⚙️ Configuración (Opcional)
+
+WireMock funciona con `localhost` por defecto, pero si necesitas configurar una URL diferente, puedes hacerlo en `~/.config/zsh/functions/.env`:
+
+```zsh
+# URL del servidor Wiremock (opcional)
+WIREMOCK_SERVER_URL="http://localhost:8080"
+```
+
+📖 Ver [Guía de Configuración](./configuration.md) para más detalles.
+
 ## 🎭 wiremock_run_server
 
 Inicia un servidor WireMock standalone para mocking y testing de APIs.
 
 ### Uso
 
-```bash
+```zsh
 wiremock_run_server [OPTIONS]
 ```
 
@@ -22,7 +33,7 @@ wiremock_run_server [OPTIONS]
 
 ### Configuración por Defecto
 
-```bash
+```zsh
 Puerto:     8000
 JAR:        ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar
 Stubs Dir:  ./src/main/resources/stubs/
@@ -30,7 +41,7 @@ Stubs Dir:  ./src/main/resources/stubs/
 
 ### Ejemplos
 
-```bash
+```zsh
 # Iniciar en puerto por defecto
 wiremock_run_server
 
@@ -71,7 +82,7 @@ Una vez el servidor está corriendo, puedes usar estos endpoints de administraci
 
 ### Ejemplos de Endpoints Admin
 
-```bash
+```zsh
 # Verificar salud del servidor
 curl http://localhost:8000/__admin/health
 
@@ -135,7 +146,7 @@ Port must be a number between 1 and 65535
 
 ### Alias
 
-```bash
+```zsh
 run:wiremock    # Atajo para wiremock_run_server
 ```
 

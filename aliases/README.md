@@ -14,7 +14,7 @@ Aliases organizados por categoría.
 
 ### 📂 Navegación
 
-```bash
+```zsh
 cdh              # cd $HOME
 cdc              # cd $HOME/code
 cdw              # cd $HOME/code/grupo-santander-ods
@@ -23,21 +23,21 @@ ls               # ls -GA
 
 ### 📦 NPM
 
-```bash
+```zsh
 na    ni    nig   nins   nip   nid
 nie   nide  nipe  nu     nr
 ```
 
 ### 🧶 Yarn
 
-```bash
+```zsh
 y     yi    ya    yad    yap   yag
 yre   yreg  yl    yu     yw    ywi   yx
 ```
 
 ### 🔀 Git
 
-```bash
+```zsh
 gcls         # clean_repository
 gcls:all     # clean_repositories
 gmup         # update_master_repo
@@ -50,7 +50,7 @@ gswz         # Switch branch con fzf
 
 ### 🧹 Limpieza
 
-```bash
+```zsh
 sad              # seek_and_destroy
 sad:node_modules # Eliminar node_modules
 sad:dist         # Eliminar dist
@@ -60,21 +60,21 @@ sad:all          # Eliminar todo
 
 ### ⚙️ ZSH
 
-```bash
+```zsh
 zrc              # Editar .zshrc
 zp               # Editar .zprofile
 ```
 
 ### 🍺 Homebrew
 
-```bash
+```zsh
 brew:cask:on     # Configurar casks en ~/Applications
 brew:cask:off    # Desactivar configuración
 ```
 
 ### 🏢 Grupo Santander
 
-```bash
+```zsh
 eth0mtu          # Configurar MTU
 app              # cd app
 example          # cd example
@@ -90,13 +90,13 @@ npm:jfrog        # npm login jfrog
 
 ### 🔍 FZF
 
-```bash
+```zsh
 gswz             # Git switch con selector fzf
 ```
 
 ### 🛠️ Utilidades
 
-```bash
+```zsh
 goto             # Navegador de directorios
 deploy           # Sistema de deployment
 sudo             # sudo (con soporte para aliases)
@@ -112,7 +112,7 @@ Algunos aliases requieren:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar módulo Aliases
 source ~/.config/zsh/functions/aliases/aliases.zsh
 ```
@@ -121,7 +121,7 @@ source ~/.config/zsh/functions/aliases/aliases.zsh
 
 Puedes sobrescribir aliases en tu `.zshrc`:
 
-```bash
+```zsh
 # Cargar aliases del proyecto
 source ~/.config/zsh/functions/aliases/aliases.zsh
 
@@ -134,7 +134,7 @@ alias myalias="my-command"
 
 El alias `sudo` con espacio al final permite usar sudo con otros aliases:
 
-```bash
+```zsh
 # Sin el alias especial, esto no funcionaría
 sudo yi    # sudo yarn install
 
@@ -146,7 +146,7 @@ alias sudo="sudo "
 
 Algunas variables de entorno usadas:
 
-```bash
+```zsh
 CODE_DIR="code"
 WORK_DIR="grupo-santander-ods"
 TRANSFERS_BASE_DIR="..."

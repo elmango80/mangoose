@@ -16,7 +16,7 @@ Sistema completo de deployment a múltiples entornos.
 
 Realiza deployment de servicios en Quicksilver a múltiples entornos de forma secuencial.
 
-```bash
+```zsh
 deploy <service>[@version] [OPTIONS]
 ```
 
@@ -42,27 +42,27 @@ Los deployments se ejecutan en este orden:
 
 ### Selector Interactivo
 
-```bash
+```zsh
 deploy security
 ```
 
 ### Última Versión
 
-```bash
+```zsh
 deploy security@latest
 deploy login@latest
 ```
 
 ### Versión Específica
 
-```bash
+```zsh
 deploy security@0.52.1
 deploy login@1.0.0
 ```
 
 ### Modo Dry-Run
 
-```bash
+```zsh
 deploy security@0.52.1 --dry-run
 ```
 
@@ -100,20 +100,20 @@ Requiere:
 
 ## Uso
 
-```bash
+```zsh
 # Cargar módulo Deployment
 source ~/.config/zsh/functions/deployment/deploy.zsh
 ```
 
 ## Alias Relacionado
 
-```bash
+```zsh
 deploy    # Definido en aliases/aliases.zsh
 ```
 
 ## Ejemplo Completo
 
-```bash
+```zsh
 # Ver ayuda
 deploy --help
 

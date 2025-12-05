@@ -8,7 +8,7 @@ Extrae y valida el valor de un argumento de línea de comandos.
 
 ### Uso
 
-```bash
+```zsh
 if value=$(extract_arg_value "<nombre_arg>" "$2"); then
   # Usar $value
 else
@@ -37,7 +37,7 @@ El valor se considera **inválido** si:
 
 ### Ejemplos
 
-```bash
+```zsh
 # En una función que procesa argumentos
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -64,7 +64,7 @@ Lee un solo carácter del teclado sin necesidad de presionar Enter.
 
 ### Uso
 
-```bash
+```zsh
 answer=$(read_single_char)
 echo "Respuesta: $answer"
 ```
@@ -91,7 +91,7 @@ Utiliza `stty` para cambiar temporalmente el modo de terminal:
 
 ### Ejemplos
 
-```bash
+```zsh
 # Confirmación simple
 msg "¿Continuar? (y/n): " --no-newline
 answer=$(read_single_char)
@@ -115,7 +115,7 @@ Recarga archivos de configuración de Zsh.
 
 ### Uso
 
-```bash
+```zsh
 zre [archivo]
 ```
 
@@ -125,7 +125,7 @@ zre [archivo]
 
 ### Ejemplos
 
-```bash
+```zsh
 zre              # Recarga ~/.zshrc
 zre zprofile     # Recarga ~/.zprofile
 zre zshenv       # Recarga ~/.zshenv
@@ -163,7 +163,7 @@ Selector interactivo de opciones con navegación por flechas.
 
 ### Uso
 
-```bash
+```zsh
 select_option "opción1" "opción2" "opción3" "opción4"
 selected_index=$?
 selected_value="${options[$selected_index]}"
@@ -194,7 +194,7 @@ Retorna el **índice** de la opción seleccionada (1-based en Zsh)
 
 ### Ejemplo Completo
 
-```bash
+```zsh
 # Definir opciones
 versions=("1.0.0" "1.1.0" "1.2.0" "2.0.0")
 

@@ -69,6 +69,7 @@ Cada módulo tiene su propia documentación detallada:
 - [SPINNERS.md](./docs/SPINNERS.md)
 - [UTILS.md](./docs/UTILS.md)
 - [WIREMOCK.md](./docs/WIREMOCK.md)
+- [⚙️ CONFIGURACIÓN](./docs/configuration.md) - Variables de entorno y configuración
 
 ## 📦 Instalación
 
@@ -78,6 +79,17 @@ Cada módulo tiene su propia documentación detallada:
 # Descargar e instalar con un comando
 curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh | zsh
 ```
+
+### ⚙️ Configuración Post-Instalación
+
+Después de instalar, **edita el archivo `.env` con tus valores reales**:
+
+```zsh
+nano ~/.config/zsh/functions/.env
+# o con tu editor preferido
+```
+
+Ver [Guía de Configuración](./docs/configuration.md) para más detalles.
 
 O descarga primero y luego ejecuta:
 
@@ -101,9 +113,16 @@ El instalador:
 # Clonar el repositorio
 git clone https://github.com/elmango80/zsh-functions.git ~/.config/zsh/functions
 
+# Crear archivo de configuración desde el ejemplo
+cp ~/.config/zsh/functions/.env.example ~/.config/zsh/functions/.env
+
+# Editar con tus valores reales
+nano ~/.config/zsh/functions/.env
+
 # Agregar a tu .zshrc (carga en orden correcto)
 cat >> ~/.zshrc << 'EOF'
 # Cargar Zsh Functions (orden de dependencias)
+source ~/.config/zsh/functions/core/env-loader.zsh
 source ~/.config/zsh/functions/core/colors.zsh
 source ~/.config/zsh/functions/core/utils.zsh
 source ~/.config/zsh/functions/core/print.zsh
@@ -152,6 +171,27 @@ cd ~/.config/zsh/functions
 git pull
 source ~/.zshrc
 ```
+
+## 🔒 Seguridad e Información Sensible
+
+Este proyecto utiliza un sistema de configuración local para proteger información sensible:
+
+- **✅ `.env`** - Archivo local con tus credenciales (NO se sube al repo, está en `.gitignore`)
+- **📄 `.env.example`** - Plantilla con valores dummy (incluida en el repo como referencia)
+- **🔐 Variables protegidas**:
+  - URLs de servidores
+  - IDs de aplicaciones y servicios
+  - IDs de entornos de deployment
+  - Cualquier información específica de tu organización
+
+**Importante:**
+
+- ⚠️ NUNCA hagas commit del archivo `.env`
+- ⚠️ NUNCA compartas tu archivo `.env` con otros
+- ✅ Siempre usa `.env.example` como referencia
+- ✅ Cada instalación debe tener su propio `.env` configurado
+
+Ver [Guía de Configuración](./docs/configuration.md) para más detalles sobre seguridad.
 
 ## ⚡ Inicio Rápido
 

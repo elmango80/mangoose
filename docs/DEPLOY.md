@@ -2,13 +2,41 @@
 
 Sistema de deployment automatizado para Quicksilver.
 
+## ⚙️ Configuración Requerida
+
+Antes de usar este módulo, debes configurar las variables de entorno en `~/.config/zsh/functions/.env`:
+
+```zsh
+# URL del servidor de deployment
+DEPLOY_SERVER_URL="https://your-server.example.com"
+
+# ID de la aplicación
+DEPLOY_APP_ID="138"
+
+# IDs de servicios
+DEPLOY_SERVICE_SECURITY_ID="2701"
+DEPLOY_SERVICE_LOGIN_ID="2700"
+
+# Entornos de deployment (orden de ejecución)
+DEPLOY_ENVIRONMENTS=(
+  "1858:DEVELOPMENT"
+  "1906:DEVELOPMENT Contact Center"
+  "1891:QUALITY ASSURANCE"
+  "1907:QUALITY ASSURANCE Contact Center"
+  "1892:STAGING"
+  "1909:STAGING Contact Center"
+)
+```
+
+📖 Ver [Guía de Configuración](./configuration.md) para más detalles.
+
 ## 🚀 deploy
 
 Realiza deployment de servicios en Quicksilver a múltiples entornos de forma secuencial.
 
 ### Uso
 
-```bash
+```zsh
 deploy <service>[@version] [OPTIONS]
 ```
 
@@ -24,21 +52,18 @@ deploy <service>[@version] [OPTIONS]
 
 ### Servicios Disponibles
 
-| Servicio   | ID   | Descripción           |
-| ---------- | ---- | --------------------- |
-| `security` | 2701 | Servicio de seguridad |
-| `login`    | 2700 | Servicio de login     |
+Los servicios y sus IDs se configuran en el archivo `.env`:
+
+| Servicio   | Variable                     | Descripción           |
+| ---------- | ---------------------------- | --------------------- |
+| `security` | `DEPLOY_SERVICE_SECURITY_ID` | Servicio de seguridad |
+| `login`    | `DEPLOY_SERVICE_LOGIN_ID`    | Servicio de login     |
 
 ### Entornos de Despliegue
 
-Los deployments se ejecutan en este orden:
+Los entornos y el orden de deployment se configuran en `DEPLOY_ENVIRONMENTS` en el archivo `.env`.
 
-1. DEVELOPMENT (ID: 1858)
-2. DEVELOPMENT Contact Center (ID: 1906)
-3. QUALITY ASSURANCE (ID: 1891)
-4. QUALITY ASSURANCE Contact Center (ID: 1907)
-5. STAGING (ID: 1892)
-6. STAGING Contact Center (ID: 1909)
+El deployment se ejecuta secuencialmente en el orden definido en la configuración.
 
 ### Modos de Operación
 
@@ -46,7 +71,7 @@ Los deployments se ejecutan en este orden:
 
 Muestra un selector interactivo con las últimas versiones disponibles:
 
-```bash
+```zsh
 deploy security
 ```
 
@@ -61,7 +86,7 @@ El sistema:
 
 Despliega automáticamente la última versión disponible:
 
-```bash
+```zsh
 deploy security@latest
 deploy login@latest
 ```
@@ -70,7 +95,7 @@ deploy login@latest
 
 Despliega una versión concreta:
 
-```bash
+```zsh
 deploy security@0.52.1
 deploy login@1.0.0
 ```
@@ -79,7 +104,7 @@ deploy login@1.0.0
 
 Simula el proceso sin hacer cambios reales:
 
-```bash
+```zsh
 deploy security@0.52.1 --dry-run
 ```
 
@@ -91,17 +116,23 @@ En este modo:
 
 ### Autenticación
 
-El script requiere tokens de autenticación de Quicksilver:
+El script solicita tokens de autenticación interactivamente cada vez que se ejecuta:
 
 1. **CSRF Token** - Para protección CSRF
 2. **Session ID** - Para autenticación de sesión
 
-Actualmente están hardcodeados en el script (líneas 116-117):
+#### Cómo obtener los tokens:
 
-```bash
-local CSRF_TOKEN="7JK57mHx2rLFtJALYYkRWCnT3Jiebyam"
-local SESSION_ID="6r5oia4o917kdjuta94fg5vrz48nbmrs"
-```
+1. El script abre automáticamente Quicksilver en tu navegador
+2. Inicia sesión con tus credenciales
+3. Abre DevTools (Cmd+Option+I en Mac, F12 en Windows/Linux)
+4. Ve a la pestaña **Application** > **Cookies**
+5. Busca y copia los valores de:
+   - `csrftoken`
+   - `sessionid`
+6. Pega cada uno cuando el script te lo solicite
+
+**Nota:** Los tokens expiran, por lo que debes obtenerlos nuevos en cada sesión de deployment.
 
 #### Cómo obtener tokens
 
@@ -115,7 +146,7 @@ local SESSION_ID="6r5oia4o917kdjuta94fg5vrz48nbmrs"
 
 ### Ejemplos
 
-```bash
+```zsh
 # Selector interactivo
 deploy security
 
@@ -156,6 +187,16 @@ Verifica que estés conectado a la VPN y que el servidor esté accesible
 
 **Solución**: Conectarse a la VPN corporativa.
 
+#### Variables de Entorno No Configuradas
+
+```
+Error: Variable DEPLOY_SERVER_URL no configurada
+Por favor, configura el archivo .env con la URL del servidor
+Ver: ~/.config/zsh/functions/.env
+```
+
+**Solución**: Edita el archivo `.env` y configura todas las variables necesarias. Ver [Guía de Configuración](./configuration.md).
+
 #### Otros Errores HTTP
 
 Muestra el código de estado HTTP y continúa o aborta según la severidad.
@@ -178,6 +219,13 @@ Exitosos: 6
 Fallidos: 0
 ========================================
 ```
+
+## 🔒 Seguridad
+
+- **Información Sensible**: URLs, IDs de servicios y entornos se almacenan en `.env` (NO se sube al repositorio)
+- **Tokens de Sesión**: Se solicitan interactivamente, no se almacenan
+- **Configuración Local**: El archivo `.env` debe crearse manualmente en cada instalación
+- **Git Ignore**: El archivo `.env` está en `.gitignore` y nunca se versionará
 
 ### Configuración
 
