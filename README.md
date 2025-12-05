@@ -74,14 +74,14 @@ Cada módulo tiene su propia documentación detallada:
 
 ### Instalación Automática (Recomendado)
 
-```bash
+```zsh
 # Descargar e instalar con un comando
 curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh | zsh
 ```
 
 O descarga primero y luego ejecuta:
 
-```bash
+```zsh
 curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh -o /tmp/install-zsh-functions.sh
 chmod +x /tmp/install-zsh-functions.sh
 /tmp/install-zsh-functions.sh
@@ -97,7 +97,7 @@ El instalador:
 
 ### Instalación Manual
 
-```bash
+```zsh
 # Clonar el repositorio
 git clone https://github.com/elmango80/zsh-functions.git ~/.config/zsh/functions
 
@@ -121,7 +121,7 @@ source ~/.zshrc
 
 ### Instalación con Loop (Alternativa)
 
-```bash
+```zsh
 # Cargar todos los módulos automáticamente
 cat >> ~/.zshrc << 'EOF'
 # Cargar Zsh Functions en orden
@@ -147,7 +147,7 @@ Es crucial cargar en este orden debido a dependencias:
 
 ### Actualizar
 
-```bash
+```zsh
 cd ~/.config/zsh/functions
 git pull
 source ~/.zshrc
@@ -155,7 +155,7 @@ source ~/.zshrc
 
 ## ⚡ Inicio Rápido
 
-```bash
+```zsh
 # Ver ayuda de cualquier función
 deploy --help
 phoenix --help
@@ -175,7 +175,7 @@ run_with_spinner --test         # Ver demo de spinners
 
 Reinicia proyectos Node.js eliminando dependencias y reconstruyendo desde cero.
 
-```bash
+```zsh
 phoenix              # Limpieza estándar
 phoenix --hard       # Limpieza profunda con yarn.lock y caché
 ```
@@ -184,7 +184,7 @@ phoenix --hard       # Limpieza profunda con yarn.lock y caché
 
 Sistema completo de deployment a Quicksilver con soporte multi-entorno.
 
-```bash
+```zsh
 deploy security                # Selector interactivo de versiones
 deploy security@latest         # Deploy última versión
 deploy security@0.52.1         # Deploy versión específica
@@ -195,7 +195,7 @@ deploy login@1.0.0 --dry-run  # Simulación sin cambios reales
 
 Limpia ramas locales que fueron eliminadas del remoto.
 
-```bash
+```zsh
 clean_repository           # Limpiar ramas huérfanas
 clean_repository --dry-run # Vista previa sin eliminar
 gcls                       # Alias corto
@@ -205,7 +205,7 @@ gcls                       # Alias corto
 
 Navegador interactivo de directorios con selector visual.
 
-```bash
+```zsh
 goto                         # Desde directorio actual
 goto --base-dir ~/projects   # Desde directorio específico
 goto --depth 4               # Buscar hasta 4 niveles
@@ -215,7 +215,7 @@ goto --depth 4               # Buscar hasta 4 niveles
 
 Busca y elimina directorios específicos recursivamente.
 
-```bash
+```zsh
 seek_and_destroy --dir node_modules
 sad:all                      # Elimina node_modules, dist y .yalc
 ```
@@ -224,7 +224,7 @@ sad:all                      # Elimina node_modules, dist y .yalc
 
 Sistema de mensajes con colores, iconos y formato.
 
-```bash
+```zsh
 msg "Operación exitosa" --success
 msg "Advertencia importante" --warning
 msg "Error crítico" --error --to-stderr
@@ -235,7 +235,7 @@ msg "Información" --info --tab 2
 
 Servidor WireMock standalone para mocking de APIs.
 
-```bash
+```zsh
 wiremock_run_server                # Puerto 8000 por defecto
 wiremock_run_server --port 9090    # Puerto personalizado
 run:wiremock                       # Alias
@@ -245,7 +245,7 @@ run:wiremock                       # Alias
 
 Ejecuta comandos mostrando spinner animado.
 
-```bash
+```zsh
 run_with_spinner --command "npm install" --message "Instalando..."
 run_with_spinner --command "yarn build" --message "Building..." --model "balloon"
 ```
@@ -291,7 +291,7 @@ run_with_spinner --command "yarn build" --message "Building..." --model "balloon
 
 ### NPM/Yarn
 
-```bash
+```zsh
 yi    # yarn install
 ya    # yarn add
 yad   # yarn add --dev
@@ -301,7 +301,7 @@ na    # npm add
 
 ### Git
 
-```bash
+```zsh
 gcls       # clean_repository
 gcls:all   # clean_repositories
 gmup       # update_master_repo
@@ -311,7 +311,7 @@ gswz       # Switch branch con fzf
 
 ### Limpieza
 
-```bash
+```zsh
 sad              # seek_and_destroy
 sad:node_modules # Eliminar node_modules
 sad:dist         # Eliminar dist
@@ -321,7 +321,7 @@ sad:all          # Eliminar todo
 
 ### Navegación
 
-```bash
+```zsh
 cdh    # cd $HOME
 cdc    # cd $HOME/code
 cdw    # cd $HOME/code/grupo-santander-ods
@@ -395,6 +395,12 @@ Para documentación detallada de cada módulo:
 - [SPINNERS.md](./docs/SPINNERS.md) - Animaciones y spinners
 - [UTILS.md](./docs/UTILS.md) - Utilidades de bajo nivel
 - [WIREMOCK.md](./docs/WIREMOCK.md) - Servidor de mocking
+
+---
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la [Licencia MIT](LICENSE) - consulta el archivo LICENSE para más detalles.
 
 ---
 
