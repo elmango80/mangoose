@@ -49,7 +49,9 @@ alias run:base="function_run_base_with_arguments"
 alias run:base:custom="function_run_base_with_arguments"
 alias run:dev="yarn dev:nodemon"
 alias run:start="yarn start"
-alias run:start:cc="yarn start-cc"
+alias run:start:cc="yarn start:cc"
+alias run:start:unlinked="yarn start:unlinked"
+alias run:start:unlinked:cc="yarn start:unlinked:cc"
 alias run:wiremock="wiremock_run_server"
 alias npm:jfrog='npm login --auth-type=web'
 
