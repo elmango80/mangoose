@@ -1,119 +1,119 @@
 #!/usr/bin/env zsh
-# Installer script for Zsh Functions Collection
+# Script de instalación para Zsh Functions Collection
 
 set -e
 
-# Colors for output
+# Colores para la salida
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m' # Sin Color
 
-# Get the directory where this script is located
+# Obtener el directorio donde se encuentra este script
 SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
 
-# Default installation directory
+# Directorio de instalación por defecto
 DEFAULT_INSTALL_DIR="${HOME}/.config/zsh/functions"
 ZSHRC="${HOME}/.zshrc"
 BACKUP_SUFFIX=".zsh-functions-backup-$(date +%Y%m%d-%H%M%S)"
 
 echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo "${BLUE}  Zsh Functions Collection Installer${NC}"
+echo "${BLUE}  Instalador de Zsh Functions Collection${NC}"
 echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Check if zsh is available
+# Verificar si zsh está disponible
 if ! command -v zsh &> /dev/null; then
-  echo "${RED}✗ Error: Zsh is not installed${NC}"
-  echo "  Please install Zsh first"
+  echo "${RED}✗ Error: Zsh no está instalado${NC}"
+  echo "  Por favor instala Zsh primero"
   exit 1
 fi
 
-echo "${GREEN}✓${NC} Zsh found: $(zsh --version)"
+echo "${GREEN}✓${NC} Zsh encontrado: $(zsh --version)"
 
-# Determine installation directory
+# Determinar el directorio de instalación
 if [ -d "$SCRIPT_DIR/.git" ]; then
-  # Running from cloned repository
+  # Ejecutándose desde el repositorio clonado
   INSTALL_DIR="$SCRIPT_DIR"
-  echo "${BLUE}Running from repository:${NC} $INSTALL_DIR"
+  echo "${BLUE}Ejecutando desde repositorio:${NC} $INSTALL_DIR"
 else
-  # Running from curl/wget (downloaded script)
+  # Ejecutándose desde curl/wget (script descargado)
   INSTALL_DIR="$DEFAULT_INSTALL_DIR"
   
-  # Check if already installed
+  # Verificar si ya está instalado
   if [ -d "$INSTALL_DIR/.git" ]; then
-    echo "${YELLOW}⚠ Already installed at:${NC} $INSTALL_DIR"
-    echo "Options:"
-    echo "  1. Update (git pull)"
-    echo "  2. Reinstall (backup and clone again)"
-    echo "  3. Cancel"
+    echo "${YELLOW}⚠ Ya instalado en:${NC} $INSTALL_DIR"
+    echo "Opciones:"
+    echo "  1. Actualizar (git pull)"
+    echo "  2. Reinstalar (respaldar y clonar de nuevo)"
+    echo "  3. Cancelar"
     echo ""
-    read "choice?Choose [1-3]: "
+    read "choice?Elige [1-3]: "
     
     case $choice in
       1)
-        echo "${BLUE}Updating...${NC}"
+        echo "${BLUE}Actualizando...${NC}"
         cd "$INSTALL_DIR"
         git pull
-        echo "${GREEN}✓ Updated${NC}"
+        echo "${GREEN}✓ Actualizado${NC}"
         ;;
       2)
-        echo "${YELLOW}Backing up...${NC}"
+        echo "${YELLOW}Respaldando...${NC}"
         mv "$INSTALL_DIR" "${INSTALL_DIR}${BACKUP_SUFFIX}"
-        echo "${BLUE}Cloning...${NC}"
+        echo "${BLUE}Clonando...${NC}"
         git clone https://github.com/elmango80/zsh-functions.git "$INSTALL_DIR"
-        echo "${GREEN}✓ Reinstalled${NC}"
+        echo "${GREEN}✓ Reinstalado${NC}"
         ;;
       3)
-        echo "Cancelled"
+        echo "Cancelado"
         exit 0
         ;;
       *)
-        echo "${RED}Invalid option${NC}"
+        echo "${RED}Opción inválida${NC}"
         exit 1
         ;;
     esac
   else
-    # Fresh installation
-    echo "${BLUE}Installing to:${NC} $INSTALL_DIR"
+    # Instalación nueva
+    echo "${BLUE}Instalando en:${NC} $INSTALL_DIR"
     mkdir -p "$(dirname "$INSTALL_DIR")"
-    echo "${BLUE}Cloning repository...${NC}"
+    echo "${BLUE}Clonando repositorio...${NC}"
     git clone https://github.com/elmango80/zsh-functions.git "$INSTALL_DIR"
-    echo "${GREEN}✓ Cloned${NC}"
+    echo "${GREEN}✓ Clonado${NC}"
   fi
 fi
 
-echo "${BLUE}Configuring .zshrc${NC}"
+echo "${BLUE}Configurando .zshrc${NC}"
 
-# Check if already configured
+# Verificar si ya está configurado
 if grep -q "zsh-functions" "$ZSHRC" 2>/dev/null; then
-  echo "${YELLOW}⚠ .zshrc already configured${NC}"
-  echo "Skip? [Y/n]: "
+  echo "${YELLOW}⚠ .zshrc ya está configurado${NC}"
+  echo "¿Saltar? [S/n]: "
   read skip_config
   if [[ "$skip_config" =~ ^[Nn]$ ]]; then
-    echo "${YELLOW}Backing up .zshrc...${NC}"
+    echo "${YELLOW}Respaldando .zshrc...${NC}"
     cp "$ZSHRC" "${ZSHRC}${BACKUP_SUFFIX}"
   else
-    echo "${BLUE}Skipped${NC}"
-    echo "${GREEN}✓ Done!${NC}"
-    echo "${BLUE}Reloading .zshrc...${NC}"
+    echo "${BLUE}Saltado${NC}"
+    echo "${GREEN}✓ ¡Listo!${NC}"
+    echo "${BLUE}Recargando .zshrc...${NC}"
     source "$ZSHRC"
-    echo "${GREEN}✓ Reloaded${NC}"
+    echo "${GREEN}✓ Recargado${NC}"
     exit 0
   fi
 fi
 
-# Backup .zshrc
+# Respaldar .zshrc
 if [ -f "$ZSHRC" ] && [ ! -f "${ZSHRC}${BACKUP_SUFFIX}" ]; then
-  echo "${YELLOW}Backing up .zshrc...${NC}"
+  echo "${YELLOW}Respaldando .zshrc...${NC}"
   cp "$ZSHRC" "${ZSHRC}${BACKUP_SUFFIX}"
-  echo "${GREEN}✓ Backed up${NC}"
+  echo "${GREEN}✓ Respaldado${NC}"
 fi
 
-# Add configuration
+# Agregar configuración
 echo ""
-echo "${BLUE}Adding to .zshrc...${NC}"
+echo "${BLUE}Agregando a .zshrc...${NC}"
 
 cat >> "$ZSHRC" << EOF
 
@@ -122,7 +122,7 @@ cat >> "$ZSHRC" << EOF
 # https://github.com/elmango80/zsh-functions
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Load in dependency order
+# Cargar en orden de dependencias
 source ${INSTALL_DIR}/core/colors.zsh
 source ${INSTALL_DIR}/core/utils.zsh
 source ${INSTALL_DIR}/core/print.zsh
@@ -135,16 +135,24 @@ source ${INSTALL_DIR}/aliases/aliases.zsh
 
 EOF
 
-echo "${GREEN}✓ Configured${NC}"
-echo "${BLUE}Reloading .zshrc...${NC}"
-source "$ZSHRC"
-echo "${GREEN}✓ Reloaded${NC}"
+echo "${GREEN}✓ Configurado${NC}"
+
 echo ""
-echo "Try some commands:"
+echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "${GREEN}  ¡Instalación Completa!${NC}"
+echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo "${BLUE}Recargando .zshrc...${NC}"
+source "$ZSHRC"
+echo "${GREEN}✓ Recargado${NC}"
+echo ""
+echo "Prueba algunos comandos:"
 echo "  ${BLUE}phoenix --help${NC}"
 echo "  ${BLUE}deploy --help${NC}"
 echo ""
-echo "Installed at: ${BLUE}${INSTALL_DIR}${NC}"
+echo "Instalado en: ${BLUE}${INSTALL_DIR}${NC}"
+echo ""
 if [ -f "${ZSHRC}${BACKUP_SUFFIX}" ]; then
-  echo "Backup: ${YELLOW}${ZSHRC}${BACKUP_SUFFIX}${NC}"
+  echo "Respaldo: ${YELLOW}${ZSHRC}${BACKUP_SUFFIX}${NC}"
+  echo ""
 fi

@@ -35,101 +35,101 @@ function wiremock_run_server() {
             shift
             ;;
         --help|-h)
-            msg "Usage: wiremock_run_server [OPTIONS]"
-            msg "Start a WireMock standalone server for API mocking and testing."
+            msg "Uso: wiremock_run_server [OPCIONES]"
+            msg "Inicia un servidor WireMock standalone para mocking y testing de APIs."
             msg --blank
-            msg "Optional:"
-            msg "  -p, --port PORT             Port number for the server (default: 8000)"
-            msg "                              Must be between 1 and 65535"
-            msg "  -j, --jar PATH              Path to the WireMock standalone JAR file"
-            msg "                              Default: ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar"
-            msg "  -s, --stubs PATH            Path to the directory containing WireMock stubs"
-            msg "                              Default: ./src/main/resources/stubs/"
-            msg "  -r, --reset                 Reset all stubs and request logs on the server"
-            msg "  -h, --help                  Show this help"
+            msg "Opcional:"
+            msg "  -p, --port PUERTO           Número de puerto para el servidor (por defecto: 8000)"
+            msg "                              Debe estar entre 1 y 65535"
+            msg "  -j, --jar RUTA              Ruta al archivo JAR standalone de WireMock"
+            msg "                              Por defecto: ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar"
+            msg "  -s, --stubs RUTA            Ruta al directorio que contiene los stubs de WireMock"
+            msg "                              Por defecto: ./src/main/resources/stubs/"
+            msg "  -r, --reset                 Reiniciar todos los stubs y logs de peticiones en el servidor"
+            msg "  -h, --help                  Mostrar esta ayuda"
             msg --blank
-            msg "Server Features:"
-            msg "  • Stub-based request matching and response generation"
-            msg "  • Global response templating enabled"
-            msg "  • CORS support for cross-origin requests"
-            msg "  • Verbose logging for debugging"
-            msg "  • Admin API for runtime configuration"
+            msg "Características del Servidor:"
+            msg "  • Coincidencia de peticiones y generación de respuestas basadas en stubs"
+            msg "  • Plantillas de respuesta globales habilitadas"
+            msg "  • Soporte CORS para peticiones de origen cruzado"
+            msg "  • Registro detallado para depuración"
+            msg "  • API de administración para configuración en tiempo de ejecución"
             msg --blank
-            msg "Default Paths:"
-            msg "  JAR File:     ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar"
-            msg "  Stubs Dir:    ./src/main/resources/stubs/"
+            msg "Rutas por Defecto:"
+            msg "  Archivo JAR:  ./src/main/resources/stubs/wiremock-standalone-3.9.2.jar"
+            msg "  Dir. Stubs:   ./src/main/resources/stubs/"
             msg --blank
-            msg "Admin Endpoints (when server is running):"
-            msg "  Health:       GET  http://localhost:<port>/__admin/health"
-            msg "  Mappings:     GET  http://localhost:<port>/__admin/mappings"
-            msg "  Settings:     GET  http://localhost:<port>/__admin/settings"
-            msg "  Reset:        POST http://localhost:<port>/__admin/reset"
-            msg "  Requests:     GET  http://localhost:<port>/__admin/requests"
+            msg "Endpoints de Administración (cuando el servidor está ejecutándose):"
+            msg "  Salud:        GET  http://localhost:<puerto>/__admin/health"
+            msg "  Mappings:     GET  http://localhost:<puerto>/__admin/mappings"
+            msg "  Ajustes:      GET  http://localhost:<puerto>/__admin/settings"
+            msg "  Reiniciar:    POST http://localhost:<puerto>/__admin/reset"
+            msg "  Peticiones:   GET  http://localhost:<puerto>/__admin/requests"
             msg --blank
-            msg "Examples:"
-            msg "  wiremock_run_server                    # Start on default port 8000"
-            msg "  wiremock_run_server --port 9090        # Start on custom port 9090"
-            msg "  wiremock_run_server --help             # Show this help"
+            msg "Ejemplos:"
+            msg "  wiremock_run_server                    # Iniciar en puerto por defecto 8000"
+            msg "  wiremock_run_server --port 9090        # Iniciar en puerto personalizado 9090"
+            msg "  wiremock_run_server --help             # Mostrar esta ayuda"
             msg --blank
-            msg "Notes:"
-            msg "  • Requires Java to be installed and available in PATH"
-            msg "  • Server runs in foreground - use Ctrl+C to stop"
-            msg "  • Stubs are loaded from the configured directory on startup"
+            msg "Notas:"
+            msg "  • Requiere Java instalado y disponible en PATH"
+            msg "  • El servidor se ejecuta en primer plano - usa Ctrl+C para detener"
+            msg "  • Los stubs se cargan desde el directorio configurado al iniciar"
             return 0
             ;;
         *)
-            msg "Unexpected argument $1" --error --to-stderr
+            msg "Argumento inesperado $1" --error --to-stderr
             return 1
             ;;
         esac
     done
 
-    # Validate that the port is a number
+    # Validar que el puerto sea un número
     if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
-        msg "Port must be a number between 1 and 65535" --error
+        msg "El puerto debe ser un número entre 1 y 65535" --error
         return 1
     fi
 
     if [ ! -f "$jarWiremock" ]; then
-        msg "WireMock JAR file not found at $jarWiremock." --error
+        msg "Archivo JAR de WireMock no encontrado en $jarWiremock." --error
         return 1
     fi
     
     if [ ! -d "$stubsPath" ]; then
-        msg "Stubs directory not found at $stubsPath." --error
+        msg "Directorio de stubs no encontrado en $stubsPath." --error
         return 1
     fi
 
     if [ "$reset" = true ]; then
         run_with_spinner --command "curl -X POST 'http://localhost:$port/__admin/reset'" \
-            --message "Resetting WireMock server stubs and requests..." \
+            --message "Reiniciando stubs y peticiones del servidor WireMock..." \
             --model 'hamburger' \
             --delay 0.25
         return 0
     fi
 
     msg --blank
-    msg "${CYAN}🚀 Starting WireMock Mock Server on port $port...${NC}"
-    msg "${CYAN}🚀 Starting WireMock Mock Server...${NC}"
-    msg "${YELLOW}   - Port: ${WHITE}$port${NC}"
-    msg "${YELLOW}   - Stubs directory: ${WHITE}$stubsPath${NC}"
-    msg "${YELLOW}   - WireMock JAR: ${WHITE}$jarWiremock${NC}"
+    msg "${CYAN}🚀 Iniciando Servidor Mock WireMock en puerto $port...${NC}"
+    msg "${CYAN}🚀 Iniciando Servidor Mock WireMock...${NC}"
+    msg "${YELLOW}   - Puerto: ${WHITE}$port${NC}"
+    msg "${YELLOW}   - Directorio de stubs: ${WHITE}$stubsPath${NC}"
+    msg "${YELLOW}   - JAR de WireMock: ${WHITE}$jarWiremock${NC}"
     msg --blank
 
-    msg "${GREEN}✅ All files verified successfully!${NC}"
-    msg "${BLUE}Launching WireMock server...${NC}"
+    msg "${GREEN}✅ ¡Todos los archivos verificados exitosamente!${NC}"
+    msg "${BLUE}Lanzando servidor WireMock...${NC}"
     msg --blank
-    msg "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━ 📡 SERVER ENDPOINTS ━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    msg "${CYAN}Main Server:    ${WHITE}curl -X GET http://localhost:$port${NC}"
-    msg "${CYAN}Health Check:   ${WHITE}curl -X GET http://localhost:$port/__admin/health${NC}"
-    msg "${CYAN}All Mappings:   ${WHITE}curl -X GET http://localhost:$port/__admin/mappings${NC}"
-    msg "${CYAN}Settings:       ${WHITE}curl -X GET http://localhost:$port/__admin/settings${NC}"
-    msg "${CYAN}Reset Server:   ${WHITE}curl -X POST http://localhost:$port/__admin/reset${NC}"
-    msg "${CYAN}Request Log:    ${WHITE}curl -X GET http://localhost:$port/__admin/requests${NC}"
+    msg "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━ 📡 ENDPOINTS DEL SERVIDOR ━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    msg "${CYAN}Servidor Principal:   ${WHITE}curl -X GET http://localhost:$port${NC}"
+    msg "${CYAN}Verificación Salud:   ${WHITE}curl -X GET http://localhost:$port/__admin/health${NC}"
+    msg "${CYAN}Todos los Mappings:   ${WHITE}curl -X GET http://localhost:$port/__admin/mappings${NC}"
+    msg "${CYAN}Configuración:        ${WHITE}curl -X GET http://localhost:$port/__admin/settings${NC}"
+    msg "${CYAN}Reiniciar Servidor:   ${WHITE}curl -X POST http://localhost:$port/__admin/reset${NC}"
+    msg "${CYAN}Log de Peticiones:    ${WHITE}curl -X GET http://localhost:$port/__admin/requests${NC}"
     msg "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     msg --blank
 
-    # Run WireMock
+    # Ejecutar WireMock
     java -jar "$jarWiremock" \
         --disable-banner \
         --root-dir="$stubsPath" \
@@ -139,5 +139,5 @@ function wiremock_run_server() {
         --port $port
 
     msg --blank
-    msg "${YELLOW}👋 WireMock server has stopped.${NC}"
+    msg "${YELLOW}👋 El servidor WireMock se ha detenido.${NC}"
 }

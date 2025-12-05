@@ -84,36 +84,36 @@ function run_with_spinner() {
         shift
         ;;
       --help|-h)
-        msg "Usage: run_with_spinner [OPTIONS]"
-        msg "Execute a command with a spinning animation indicator."
+        msg "Uso: run_with_spinner [OPCIONES]"
+        msg "Ejecuta un comando con un indicador de animación giratorio."
         msg --blank
-        msg "Required:"
-        msg "  --command CMD           Command to execute in background"
+        msg "Requerido:"
+        msg "  --command CMD           Comando a ejecutar en segundo plano"
         msg --blank
-        msg "Optional:"
-        msg "  --delay SECONDS         Animation delay (default: 0.125)"
-        msg "  --message TEXT          Message to display (default: 'Waiting...')"
-        msg "  --model MODEL           Spinner model (default: 'dots')"
-        msg "  --line-offset N         Line offset for display (default: 0)"
-        msg "  --tab N                 Number of tabs before spinner (default: 0)"
-        msg "  --no-newline            Don't add newline at end of final message"
-        msg "  --test                  Run test demonstration with different spinners"
-        msg "  -h, --help              Show this help"
+        msg "Opcional:"
+        msg "  --delay SEGUNDOS        Retraso de animación (por defecto: 0.125)"
+        msg "  --message TEXTO         Mensaje a mostrar (por defecto: 'Esperando...')"
+        msg "  --model MODELO          Modelo de spinner (por defecto: 'dots')"
+        msg "  --line-offset N         Desplazamiento de línea para mostrar (por defecto: 0)"
+        msg "  --tab N                 Número de tabulaciones antes del spinner (por defecto: 0)"
+        msg "  --no-newline            No agregar salto de línea al final del mensaje final"
+        msg "  --test                  Ejecutar demostración de prueba con diferentes spinners"
+        msg "  -h, --help              Mostrar esta ayuda"
         msg --blank
-        msg "Available spinner models:"
+        msg "Modelos de spinner disponibles:"
         msg "  dots, balloon, grow-vertical, grow-horizontal,"
         msg "  star, hamburger, arc, circle"
         msg --blank
-        msg "Examples:"
+        msg "Ejemplos:"
         msg "  run_with_spinner --test"
-        msg "  run_with_spinner --command \"sleep 5\" --message \"Processing...\""
+        msg "  run_with_spinner --command \"sleep 5\" --message \"Procesando...\""
         msg "  run_with_spinner --command \"npm install\" --model arc"
-        msg "  run_with_spinner --command \"make build\" --tab 2 --message \"Building...\""
-        msg "  run_with_spinner --command \"sleep 2\" --message \"Loading...\" --no-newline"
+        msg "  run_with_spinner --command \"make build\" --tab 2 --message \"Compilando...\""
+        msg "  run_with_spinner --command \"sleep 2\" --message \"Cargando...\" --no-newline"
         return 0
         ;;
       *)
-        msg "Unexpected argument $1" --error --to-stderr
+        msg "Argumento inesperado $1" --error --to-stderr
         return 1
         ;;
     esac

@@ -4,7 +4,7 @@
 function is_git_repository() {
   if [[ ! -d ".git" ]]
   then
-    msg "Not found a git repository in ${BOLD}${ITALIC}$(pwd)${NC}" --error --to-stderr
+    msg "No se encontró un repositorio git en ${BOLD}${ITALIC}$(pwd)${NC}" --error --to-stderr
     return 1
   fi
 
@@ -25,34 +25,34 @@ function clean_repository() {
         demo_mode=1
         ;;
       --help|-h)
-        printf "${GREEN}clean_repository${NC} - Clean stale branches that have been deleted from remote\n"
+        printf "${GREEN}clean_repository${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto\n"
         printf "\n"
-        printf "${BOLD}USAGE:${NC}\n"
-        printf "  clean_repository [OPTIONS]\n"
+        printf "${BOLD}USO:${NC}\n"
+        printf "  clean_repository [OPCIONES]\n"
         printf "\n"
-        printf "${BOLD}OPTIONS:${NC}\n"
-        printf "  ${YELLOW}--dry-run${NC}    Show which branches would be deleted without actually deleting them\n"
-        printf "  ${YELLOW}--demo, -d${NC}   Simulate branch deletion with sleep (for testing purposes)\n"
-        printf "  ${YELLOW}--help, -h${NC}   Show this help message\n"
+        printf "${BOLD}OPCIONES:${NC}\n"
+        printf "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente\n"
+        printf "  ${YELLOW}--demo, -d${NC}   Simula la eliminación de ramas con pausa (para pruebas)\n"
+        printf "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda\n"
         printf "\n"
-        printf "${BOLD}DESCRIPTION:${NC}\n"
-        printf "  This function identifies local branches that have been deleted from the remote\n"
-        printf "  repository and removes them from your local repository. It will:\n"
-        printf "  • Fetch and prune remote references\n"
-        printf "  • Identify branches with 'gone' tracking status\n"
-        printf "  • Delete stale branches (except current branch)\n"
-        printf "  • Prompt before deleting current branch if it's also stale\n"
+        printf "${BOLD}DESCRIPCIÓN:${NC}\n"
+        printf "  Esta función identifica ramas locales que han sido eliminadas del repositorio\n"
+        printf "  remoto y las elimina de tu repositorio local. Hará lo siguiente:\n"
+        printf "  • Actualiza y limpia referencias remotas\n"
+        printf "  • Identifica ramas con estado de seguimiento 'gone'\n"
+        printf "  • Elimina ramas obsoletas (excepto la rama actual)\n"
+        printf "  • Pregunta antes de eliminar la rama actual si también está obsoleta\n"
         printf "\n"
-        printf "${BOLD}EXAMPLES:${NC}\n"
-        printf "  clean_repository                  # Clean stale branches\n"
-        printf "  clean_repository --dry-run        # Preview what would be deleted\n"
-        printf "  clean_repository --demo           # Simulate deletion for testing\n"
-        printf "  clean_repository --demo --dry-run # Preview then simulate\n"
+        printf "${BOLD}EJEMPLOS:${NC}\n"
+        printf "  clean_repository                  # Limpia ramas obsoletas\n"
+        printf "  clean_repository --dry-run        # Previsualiza qué se eliminaría\n"
+        printf "  clean_repository --demo           # Simula eliminación para pruebas\n"
+        printf "  clean_repository --demo --dry-run # Previsualiza y luego simula\n"
         return 0
         ;;
       *)
-        msg "Unexpected argument $1" --error --to-stderr
-        msg "Use --help for usage information" --info
+        msg "Argumento inesperado $1" --error --to-stderr
+        msg "Usa --help para información de uso" --info
         return 1
         ;;
     esac
@@ -91,14 +91,14 @@ function clean_repository() {
     
     # Si no hay ramas para eliminar
     if [[ -z "$all_stale_branches" ]]; then
-      msg "No stale branches found in $repo_name" --success
+      msg "No se encontraron ramas obsoletas en $repo_name" --success
       return 0
     fi
 
     if [[ $dry_run -eq 1 ]]; then
-      msg "Branches that would be deleted in ${ITALIC}$repo_name${NC}" --info
+      msg "Ramas que se eliminarían en ${ITALIC}$repo_name${NC}" --info
       if [[ $current_branch_is_stale -eq 1 ]]; then
-        msg "The current branch has been deleted from remote" --warning 
+        msg "La rama actual ha sido eliminada del remoto" --warning 
         msg "${YELLOW}$current_branch${NC}" --tab 1
         msg --blank
       fi
@@ -114,21 +114,21 @@ function clean_repository() {
 
     # Mostrar mensaje informativo en modo demo
     if [[ $demo_mode -eq 1 ]]; then
-      msg "Running in ${YELLOW}DEMO MODE${NC} - branches will not be actually deleted" --warning
+      msg "Ejecutando en ${YELLOW}MODO DEMO${NC} - las ramas no se eliminarán realmente" --warning
       msg --blank
     fi
 
     # Eliminar primero las otras ramas
     if [[ -n "$other_stale_branches" ]]; then
-      msg "🗑️ Remove stale branches in ${GREEN}$repo_name${NC}"
+      msg "🗑️ Eliminando ramas obsoletas en ${GREEN}$repo_name${NC}"
       echo -e "$other_stale_branches" | while read branch; do
         if [[ -n "$branch" ]]; then
           if [[ $demo_mode -eq 1 ]]; then
-            run_with_spinner --command "sleep 3" --message "Deleting branch ${RED}$branch${NC}" --no-newline
+            run_with_spinner --command "sleep 3" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
           else
-            run_with_spinner --command "git branch -D \"$branch\"" --message "Deleting branch ${RED}$branch${NC}" --no-newline
+            run_with_spinner --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
           fi
-          msg "\r${GREEN}✓ Deleted branch ${RED}$branch${NC} "
+          msg "\r${GREEN}✓ Rama eliminada ${RED}$branch${NC} "
         fi
       done
     fi
@@ -136,45 +136,45 @@ function clean_repository() {
     # Manejar la rama actual si también está eliminada del remoto
     if [[ $current_branch_is_stale -eq 1 ]]; then
       msg --blank
-      msg "${YELLOW}Warning: Your current branch has also been deleted from remote.${NC}" --warning
-      msg "Do you want to delete the current branch and switch to ${GREEN}${ITALIC}$git_master_branch${NC}? (y/N): "
+      msg "${YELLOW}Advertencia: Tu rama actual también ha sido eliminada del remoto.${NC}" --warning
+      msg "¿Quieres eliminar la rama actual y cambiar a ${GREEN}${ITALIC}$git_master_branch${NC}? (s/N): "
       
       answer=$(read_single_char)
       
-      if [[ $answer == "y" ]]; then
+      if [[ $answer == "s" ]] || [[ $answer == "y" ]]; then
         if [[ $demo_mode -eq 0 ]]; then
-          msg "  • Switching to ${GREEN}$git_master_branch${NC} branch"
+          msg "  • Cambiando a la rama ${GREEN}$git_master_branch${NC}"
           git switch $git_master_branch > /dev/null 2>&1
         fi
 
         if [[ $demo_mode -eq 1 ]]; then
-          run_with_spinner --command "sleep 3" --message "Deleting branch ${RED}$current_branch${NC}" --no-newline
+          run_with_spinner --command "sleep 3" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         else
-          run_with_spinner --command "git branch --delete --force \"$current_branch\"" --message "Deleting branch ${RED}$current_branch${NC}" --no-newline
+          run_with_spinner --command "git branch --delete --force \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         fi
-        msg "\r${GREEN}✓ Deleted branch ${RED}$current_branch${NC} "
+        msg "\r${GREEN}✓ Rama eliminada ${RED}$current_branch${NC} "
       fi
     fi
 
     if [[ -n "$other_stale_branches" || $current_branch_is_stale -eq 1 ]]; then
-      msg "Cleanup completed for ${BOLD_CYAN}$repo_name${NC}" --success
+      msg "Limpieza completada para ${BOLD_CYAN}$repo_name${NC}" --success
     fi
   fi
 }
 
 function clean_repositories() {
-  printf "${GREEN}Cleaning repositories...${NC}\n"
+  printf "${GREEN}Limpiando repositorios...${NC}\n"
   for d in */
   do
     if [[ -d "$d/.git" ]]
     then
-      printf "Processing ${CYAN}$d${NC}\n"
+      printf "Procesando ${CYAN}$d${NC}\n"
       cd "$d"
       clean_repository
       cd ..
     fi
   done
-  printf "🎉 All repositories cleaned\n"
+  printf "🎉 Todos los repositorios limpiados\n"
 }
 
 function update_master_repo() {
@@ -183,56 +183,56 @@ function update_master_repo() {
 
   if is_git_repository; then
     local repo_name=$(basename `git rev-parse --show-toplevel`)
-    printf "🚀 Star update master of ${GREEN}$repo_name${NC}\n"
+    printf "🚀 Iniciando actualización de master en ${GREEN}$repo_name${NC}\n"
 
     git fetch origin $git_master_branch > /dev/null 2>&1
     local has_remote_changes=$(git diff $git_master_branch origin/$git_master_branch --quiet || echo "changes")
     if [[ -n $has_remote_changes ]]
     then
       local current_branch=$(git branch --show-current)
-      printf "   Current branch ${GREEN}$current_branch${NC}\n"
+      printf "   Rama actual ${GREEN}$current_branch${NC}\n"
 
       local has_uncommitted_changes=$(git status --porcelain)
       if [[ -n $has_uncommitted_changes ]]
       then
-        printf "  • ${YELLOW}Stashing uncommitted changes${NC}\n"
+        printf "  • ${YELLOW}Guardando cambios sin confirmar${NC}\n"
         git stash > /dev/null 2>&1
       fi
       
       if [[ "$current_branch" != "master" && "$current_branch" != "main" ]]
       then
-        printf "  • Switch to ${GREEN}master${NC} branch\n"
+        printf "  • Cambiando a la rama ${GREEN}master${NC}\n"
         git switch $git_master_branch > /dev/null 2>&1
       fi
 
-      printf "  • Pulling changes from remote master branch\n"
+      printf "  • Obteniendo cambios de la rama master remota\n"
       git pull origin $git_master_branch > /dev/null 2>&1
 
       if [[ "$current_branch" != $git_master_branch ]]
       then
-        printf "  • Switch to ${GREEN}$current_branch${NC} branch\n"
+        printf "  • Cambiando a la rama ${GREEN}$current_branch${NC}\n"
         git switch "$current_branch" > /dev/null 2>&1
       fi
 
       if [[ -n $has_uncommitted_changes ]]
       then
-        printf "  • Restore uncommitted changes.\n"
+        printf "  • Restaurando cambios sin confirmar.\n"
         git stash pop > /dev/null 2>&1
       fi
     fi
 
-    printf "  ✅ Master branch already updated\n"
+    printf "  ✅ Rama master ya actualizada\n"
     printf "\n"
   fi
 }
 
 function update_master_repos() {
-  printf "🔄 ${CYAN}Updating repositories...${NC}\n"
+  printf "🔄 ${CYAN}Actualizando repositorios...${NC}\n"
   for d in */
   do
     cd "$d"
     update_master_repo
     cd ..
   done
-  printf "🎉 All repositories updated\n"
+  printf "🎉 Todos los repositorios actualizados\n"
 }

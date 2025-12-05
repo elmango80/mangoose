@@ -91,39 +91,39 @@ function msg() {
         return 0
         ;;
       --help|-h)
-        printf "Usage: msg [MESSAGE] [OPTIONS]\n"
+        printf "Uso: msg [MENSAJE] [OPCIONES]\n"
         printf "\n"
-        printf "Arguments:\n"
-        printf "  MESSAGE                 The text message to display (REQUIRED)\n"
+        printf "Argumentos:\n"
+        printf "  MENSAJE                 El texto del mensaje a mostrar (REQUERIDO)\n"
         printf "\n"
-        printf "Message Types (optional):\n"
-        printf "      --error             Error message with ❌ icon\n"
-        printf "  -w, --warning           Warning message with ⚠️ icon\n"
-        printf "  -i, --info              Info message with ℹ️ icon\n"
-        printf "  -s, --success           Success message with ✅ icon\n"
-        printf "      --debug             Debug message with 🐛 icon\n"
-        printf "  -n, --notice            Notice message with 📋 icon\n"
-        printf "      --dim               Dimmed text message\n"
-        printf "      (default)           Plain text message\n"
+        printf "Tipos de Mensaje (opcional):\n"
+        printf "      --error             Mensaje de error con ícono ❌\n"
+        printf "  -w, --warning           Mensaje de advertencia con ícono ⚠️\n"
+        printf "  -i, --info              Mensaje informativo con ícono ℹ️\n"
+        printf "  -s, --success           Mensaje de éxito con ícono ✅\n"
+        printf "      --debug             Mensaje de depuración con ícono 🐛\n"
+        printf "  -n, --notice            Mensaje de aviso con ícono 📋\n"
+        printf "      --dim               Texto atenuado\n"
+        printf "      (por defecto)       Mensaje de texto simple\n"
         printf "\n"
-        printf "Optional:\n"
-        printf "      --tab N             Number of indentation levels (2 spaces each)\n"
-        printf "      --to-stderr         Send output to stderr instead of stdout\n"
-        printf "      --no-newline        Don't add newline at end of message\n"
-        printf "      --no-icon           Don't show icon for message types\n"
-        printf "      --blank             Print a blank line (no message needed)\n"
-        printf "  -h, --help              Show this help\n"
+        printf "Opcional:\n"
+        printf "      --tab N             Número de niveles de indentación (2 espacios cada uno)\n"
+        printf "      --to-stderr         Enviar salida a stderr en lugar de stdout\n"
+        printf "      --no-newline        No agregar salto de línea al final del mensaje\n"
+        printf "      --no-icon           No mostrar ícono para tipos de mensaje\n"
+        printf "      --blank             Imprimir una línea en blanco (no se necesita mensaje)\n"
+        printf "  -h, --help              Mostrar esta ayuda\n"
         printf "\n"
-        printf "Examples:\n"
-        printf "  msg \"Simple message\"\n"
-        printf "  msg \"Connection failed\" --error\n"
-        printf "  msg --error \"Connection failed\"\n"
-        printf "  msg \"Task completed\" --success\n"
-        printf "  msg \"Warning message\" --warning --to-stderr\n"
-        printf "  msg --dim \"This is dimmed text\"\n"
-        printf "  msg --tab 2 \"Indented message\"\n"
-        printf "  msg \"Loading...\" --no-newline\n"
-        printf "  msg \"Error occurred\" --error --no-icon\n"
+        printf "Ejemplos:\n"
+        printf "  msg \"Mensaje simple\"\n"
+        printf "  msg \"Conexión fallida\" --error\n"
+        printf "  msg --error \"Conexión fallida\"\n"
+        printf "  msg \"Tarea completada\" --success\n"
+        printf "  msg \"Mensaje de advertencia\" --warning --to-stderr\n"
+        printf "  msg --dim \"Este es un texto atenuado\"\n"
+        printf "  msg --tab 2 \"Mensaje indentado\"\n"
+        printf "  msg \"Cargando...\" --no-newline\n"
+        printf "  msg \"Ocurrió un error\" --error --no-icon\n"
         printf "  msg --blank\n"
         return 0
         ;;
@@ -132,8 +132,8 @@ function msg() {
         if [[ -z "$text" ]]; then
           text="$1"
         else
-          printf "%b\n" "${RED}❌ Error: Unknown argument '$1'${NC}" >&2
-          printf "Use --help for usage information\n" >&2
+          printf "%b\n" "${RED}❌ Error: Argumento desconocido '$1'${NC}" >&2
+          printf "Usa --help para información de uso\n" >&2
           return 1
         fi
         shift
@@ -143,8 +143,8 @@ function msg() {
   
   # Validar que se proporcione el texto del mensaje
   if [[ -z "$text" ]]; then
-    printf "%b\n" "${RED}❌ Error: Message text is required${NC}" >&2
-    printf "Use --help for usage information\n" >&2
+    printf "%b\n" "${RED}❌ Error: Se requiere el texto del mensaje${NC}" >&2
+    printf "Usa --help para información de uso\n" >&2
     return 1
   fi
 
