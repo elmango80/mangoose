@@ -82,10 +82,10 @@ function deploy() {
   # Validar el servicio
   case "$SERVICE" in
     security)
-      SERVICE_ID=2701
+      SERVICE_ID="${DEPLOY_SERVICE_SECURITY_ID}"
       ;;
     login)
-      SERVICE_ID=2700
+      SERVICE_ID="${DEPLOY_SERVICE_LOGIN_ID}"
       ;;
     *)
       msg "Error: Servicio desconocido '$SERVICE'" --error
@@ -93,6 +93,14 @@ function deploy() {
       return 1
       ;;
   esac
+  
+  # Verificar que las variables de entorno estén configuradas
+  if [[ -z "$SERVICE_ID" ]]; then
+    msg "Error: Variable de entorno no configurada para el servicio '$SERVICE'" --error
+    msg "Por favor, configura el archivo .env con los valores correctos" --dim
+    msg "Ver: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
   
   # Parsear flags adicionales
   while [[ $# -gt 0 ]]; do
@@ -113,7 +121,15 @@ function deploy() {
     esac
   done
   
-  local QUICKSILVER_URL="https://quicksilver-es.prod.ok-cloud.net/login/?next=/cd/react-api/check-auth-status/"
+  # Verificar que DEPLOY_SERVER_URL esté configurada
+  if [[ -z "$DEPLOY_SERVER_URL" ]]; then
+    msg "Error: Variable DEPLOY_SERVER_URL no configurada" --error
+    msg "Por favor, configura el archivo .env con la URL del servidor" --dim
+    msg "Ver: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
+  
+  local QUICKSILVER_URL="${DEPLOY_SERVER_URL}/login/?next=/cd/react-api/check-auth-status/"
   local CSRF_TOKEN=""
   local SESSION_ID=""
 
@@ -143,18 +159,24 @@ function deploy() {
     return 1
   fi
 
-  # Array asociativo de entornos a desplegar
-  declare -A ENVIRONMENTS=(
-    [1858]="DEVELOPMENT"
-    [1906]="DEVELOPMENT Contact Center"
-    [1891]="QUALITY ASSURANCE"
-    [1907]="QUALITY ASSURANCE Contact Center"
-    [1892]="STAGING"
-    [1909]="STAGING Contact Center"
-  )
+  # Verificar que DEPLOY_ENVIRONMENTS esté configurado
+  if [[ -z "${DEPLOY_ENVIRONMENTS}" ]] || [[ ${#DEPLOY_ENVIRONMENTS[@]} -eq 0 ]]; then
+    msg "Error: Variable DEPLOY_ENVIRONMENTS no configurada" --error
+    msg "Por favor, configura el archivo .env con los entornos de deployment" --dim
+    msg "Ver: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
+
+  # Construir arrays desde DEPLOY_ENVIRONMENTS
+  declare -A ENVIRONMENTS
+  local -a DEPLOYMENT_ORDER
   
-  # Orden de despliegue (IDs de entorno)
-  local DEPLOYMENT_ORDER=(1858 1906 1891 1907 1892 1909)
+  for env_entry in "${DEPLOY_ENVIRONMENTS[@]}"; do
+    local env_id="${env_entry%%:*}"
+    local env_name="${env_entry#*:}"
+    ENVIRONMENTS[$env_id]="$env_name"
+    DEPLOYMENT_ORDER+=("$env_id")
+  done
   
   # Determinar el modo de operación según si se especificó versión
   if [ -n "$SPECIFIC_VERSION" ]; then
@@ -170,7 +192,7 @@ function deploy() {
     # Modo sin versión: security (listar y seleccionar)
     # Obtener versiones disponibles (usando el primer entorno como referencia)
     local FIRST_ENV="${DEPLOYMENT_ORDER[1]}"
-    local VERSIONS_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "https://quicksilver-es.prod.ok-cloud.net/cd/api/versions/$SERVICE_ID/$FIRST_ENV" \
+    local VERSIONS_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "${DEPLOY_SERVER_URL}/cd/api/versions/$SERVICE_ID/$FIRST_ENV" \
       -H 'accept: application/json, text/plain, */*' \
       -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
       -H 'priority: u=1, i' \
@@ -246,7 +268,7 @@ function deploy() {
       run_with_spinner --command "sleep 1" --message "Desplegando en $ENV_NAME"
       # Modo dry-run: solo mostrar lo que se haría
       msg "Payload: {" --tab 1 --dim
-      msg "application: 138" --tab 2 --dim 
+      msg "application: $DEPLOY_APP_ID" --tab 2 --dim 
       msg "service: $SERVICE_ID" --tab 2 --dim
       msg "environment: $ENV_ID" --tab 2 --dim
       msg "version: $VERSION" --tab 2 --dim
@@ -257,16 +279,16 @@ function deploy() {
       # Modo normal: ejecutar el deployment real
       local RESPONSE=$(run_with_spinner \
         --message "Desplegando en $ENV_NAME" \
-        --command "curl -s -w '\nHTTP_STATUS:%{http_code}' 'https://quicksilver-es.prod.ok-cloud.net/cd/api/deployment/new' \
+        --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/deployment/new' \
           -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
           -H 'accept: application/json, text/plain, */*' \
           -H 'content-type: application/json' \
-          -H 'origin: https://quicksilver-es.prod.ok-cloud.net' \
+          -H 'origin: ${DEPLOY_SERVER_URL}' \
           -H 'priority: u=1, i' \
-          -H 'referer: https://quicksilver-es.prod.ok-cloud.net/deployment/new' \
+          -H 'referer: ${DEPLOY_SERVER_URL}/deployment/new' \
           -H 'x-csrftoken: $CSRF_TOKEN' \
           -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' \
-          --data-raw '{\"application\":138,\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
+          --data-raw '{\"application\":${DEPLOY_APP_ID},\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
       
       # Extraer el código HTTP
       local HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)

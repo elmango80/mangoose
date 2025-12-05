@@ -84,6 +84,26 @@ else
   fi
 fi
 
+echo "${BLUE}Configurando archivo de entorno (.env)${NC}"
+
+# Verificar si existe .env
+if [ ! -f "$INSTALL_DIR/.env" ]; then
+  if [ -f "$INSTALL_DIR/.env.example" ]; then
+    echo "${YELLOW}Creando .env desde .env.example...${NC}"
+    cp "$INSTALL_DIR/.env.example" "$INSTALL_DIR/.env"
+    echo "${GREEN}✓ Archivo .env creado${NC}"
+    echo ""
+    echo "${YELLOW}⚠️  IMPORTANTE: Edita el archivo .env con tus valores reales:${NC}"
+    echo "   ${BLUE}$INSTALL_DIR/.env${NC}"
+    echo ""
+  else
+    echo "${YELLOW}⚠️  No se encontró .env.example${NC}"
+  fi
+else
+  echo "${GREEN}✓ Archivo .env ya existe${NC}"
+fi
+
+echo ""
 echo "${BLUE}Configurando .zshrc${NC}"
 
 # Verificar si ya está configurado
@@ -123,6 +143,7 @@ cat >> "$ZSHRC" << EOF
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Cargar en orden de dependencias
+source ${INSTALL_DIR}/core/env-loader.zsh
 source ${INSTALL_DIR}/core/colors.zsh
 source ${INSTALL_DIR}/core/utils.zsh
 source ${INSTALL_DIR}/core/print.zsh
