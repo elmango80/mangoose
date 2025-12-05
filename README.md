@@ -1,6 +1,6 @@
 # Zsh Functions Collection
 
-Colección completa de funciones y utilidades para Zsh que mejoran significativamente la productividad en desarrollo, automatización de deployments, gestión de repositorios Git y mucho más.
+Colección completa de funciones y utilidades para Zsh organizadas por módulos que mejoran significativamente la productividad en desarrollo, automatización de deployments, gestión de repositorios Git y mucho más.
 
 ## 🌟 Características Principales
 
@@ -14,55 +14,111 @@ Colección completa de funciones y utilidades para Zsh que mejoran significativa
 - 🔍 **Búsqueda y destrucción** recursiva de directorios
 - 💯 **+90 aliases** para comandos comunes
 
-## 📚 Documentación por Módulo
+## � Estructura del Proyecto
+
+```
+zsh-functions/
+├── core/           # Funciones base (colors, print, utils, spinners)
+│   ├── colors.zsh
+│   ├── print.zsh
+│   ├── utils.zsh
+│   └── spinners.zsh
+├── git/            # Funciones relacionadas con Git
+│   └── git.zsh
+├── productivity/   # Funciones de productividad
+│   └── productivity.zsh
+├── deployment/     # Sistema de deployment
+│   └── deploy.zsh
+├── testing/        # WireMock y testing
+│   └── wiremock.zsh
+├── aliases/        # Aliases
+│   └── aliases.zsh
+└── docs/           # Documentación detallada
+    ├── ALIASES.md
+    ├── COLORS.md
+    ├── DEPLOY.md
+    ├── GIT.md
+    ├── PRINT.md
+    ├── PRODUCTIVITY.md
+    ├── SPINNERS.md
+    ├── UTILS.md
+    └── WIREMOCK.md
+```
+
+## �📚 Documentación por Módulo
 
 Cada módulo tiene su propia documentación detallada:
 
-| Módulo           | Archivo                              | Descripción                                             |
-| ---------------- | ------------------------------------ | ------------------------------------------------------- |
-| **Aliases**      | [ALIASES.md](./ALIASES.md)           | Más de 90 aliases para npm, yarn, git, navegación y más |
-| **Colors**       | [COLORS.md](./COLORS.md)             | Sistema completo de colores ANSI, 256 y RGB             |
-| **Deploy**       | [DEPLOY.md](./DEPLOY.md)             | Sistema de deployment a Quicksilver (multi-entorno)     |
-| **Git**          | [GIT.md](./GIT.md)                   | Limpieza de ramas, sincronización de repos              |
-| **Print**        | [PRINT.md](./PRINT.md)               | Sistema de mensajes con formato e iconos                |
-| **Productivity** | [PRODUCTIVITY.md](./PRODUCTIVITY.md) | seek_and_destroy, phoenix, goto                         |
-| **Spinners**     | [SPINNERS.md](./SPINNERS.md)         | Animaciones y spinners para procesos                    |
-| **Utils**        | [UTILS.md](./UTILS.md)               | Funciones utilitarias de bajo nivel                     |
-| **WireMock**     | [WIREMOCK.md](./WIREMOCK.md)         | Servidor WireMock para mocking de APIs                  |
+| Módulo           | Ubicación                        | Descripción                                        |
+| ---------------- | -------------------------------- | -------------------------------------------------- |
+| **Core**         | [core/](./core/)                 | Funciones base: colores, mensajes, utils, spinners |
+| **Git**          | [git/](./git/)                   | Limpieza de ramas, sincronización de repos         |
+| **Productivity** | [productivity/](./productivity/) | seek_and_destroy, phoenix, goto                    |
+| **Deployment**   | [deployment/](./deployment/)     | Sistema de deployment a Quicksilver                |
+| **Testing**      | [testing/](./testing/)           | Servidor WireMock para mocking de APIs             |
+| **Aliases**      | [aliases/](./aliases/)           | Más de 90 aliases para npm, yarn, git, etc.        |
+
+**Documentación detallada:**
+
+- [ALIASES.md](./docs/ALIASES.md)
+- [COLORS.md](./docs/COLORS.md)
+- [DEPLOY.md](./docs/DEPLOY.md)
+- [GIT.md](./docs/GIT.md)
+- [PRINT.md](./docs/PRINT.md)
+- [PRODUCTIVITY.md](./docs/PRODUCTIVITY.md)
+- [SPINNERS.md](./docs/SPINNERS.md)
+- [UTILS.md](./docs/UTILS.md)
+- [WIREMOCK.md](./docs/WIREMOCK.md)
 
 ## 📦 Instalación
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/TU_USUARIO/zsh-functions.git ~/.config/zsh/functions
+git clone https://github.com/elmango80/zsh-functions.git ~/.config/zsh/functions
 
-# Agregar a tu .zshrc (o crear un archivo de carga)
+# Agregar a tu .zshrc (carga automática)
 cat >> ~/.zshrc << 'EOF'
-# Cargar Zsh Functions
-for func_file in ~/.config/zsh/functions/*.zsh; do
-  source "$func_file"
-done
+# Cargar Zsh Functions (orden de dependencias)
+source ~/.config/zsh/functions/core/colors.zsh
+source ~/.config/zsh/functions/core/utils.zsh
+source ~/.config/zsh/functions/core/print.zsh
+source ~/.config/zsh/functions/core/spinners.zsh
+source ~/.config/zsh/functions/git/git.zsh
+source ~/.config/zsh/functions/productivity/productivity.zsh
+source ~/.config/zsh/functions/deployment/deploy.zsh
+source ~/.config/zsh/functions/testing/wiremock.zsh
+source ~/.config/zsh/functions/aliases/aliases.zsh
 EOF
 
 # Recargar la configuración
 source ~/.zshrc
 ```
 
-### Instalación Manual
-
-Si prefieres cargar archivos específicos:
+### Instalación Simplificada (Loop)
 
 ```bash
-echo 'source ~/.config/zsh/functions/colors.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/print.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/utils.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/spinners.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/git.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/productivity.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/deploy.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/wiremock.zsh' >> ~/.zshrc
-echo 'source ~/.config/zsh/functions/aliases.zsh' >> ~/.zshrc
+# Alternativa: cargar todos los archivos automáticamente
+cat >> ~/.zshrc << 'EOF'
+# Cargar Zsh Functions en orden
+for module_dir in core git productivity deployment testing aliases; do
+  for func_file in ~/.config/zsh/functions/$module_dir/*.zsh(N); do
+    source "$func_file"
+  done
+done
+EOF
 ```
+
+### Orden de Carga Importante
+
+⚠️ Es crucial cargar en este orden debido a dependencias:
+
+1. **core/** - Primero (base para todo)
+   - `colors.zsh` → `utils.zsh` → `print.zsh` → `spinners.zsh`
+2. **git/** - Depende de core
+3. **productivity/** - Depende de core
+4. **deployment/** - Depende de core
+5. **testing/** - Depende de core
+6. **aliases/** - Último (usa funciones de otros módulos)
 
 ## ⚡ Inicio Rápido
 
@@ -284,17 +340,28 @@ Creado con ❤️ para mejorar la productividad en la terminal.
 
 ## 📖 Más Información
 
-Para documentación detallada de cada módulo, consulta los archivos individuales:
+Para documentación detallada de cada módulo:
 
-- [ALIASES.md](./ALIASES.md) - Todos los aliases disponibles
-- [COLORS.md](./COLORS.md) - Guía completa de colores
-- [DEPLOY.md](./DEPLOY.md) - Sistema de deployment completo
-- [GIT.md](./GIT.md) - Funciones Git avanzadas
-- [PRINT.md](./PRINT.md) - Sistema de mensajes
-- [PRODUCTIVITY.md](./PRODUCTIVITY.md) - Herramientas de productividad
-- [SPINNERS.md](./SPINNERS.md) - Animaciones y spinners
-- [UTILS.md](./UTILS.md) - Utilidades de bajo nivel
-- [WIREMOCK.md](./WIREMOCK.md) - Servidor de mocking
+### Por Módulo
+
+- [core/](./core/) - README del módulo Core
+- [git/](./git/) - README del módulo Git
+- [productivity/](./productivity/) - README del módulo Productivity
+- [deployment/](./deployment/) - README del módulo Deployment
+- [testing/](./testing/) - README del módulo Testing
+- [aliases/](./aliases/) - README del módulo Aliases
+
+### Documentación Completa
+
+- [ALIASES.md](./docs/ALIASES.md) - Todos los aliases disponibles
+- [COLORS.md](./docs/COLORS.md) - Guía completa de colores
+- [DEPLOY.md](./docs/DEPLOY.md) - Sistema de deployment completo
+- [GIT.md](./docs/GIT.md) - Funciones Git avanzadas
+- [PRINT.md](./docs/PRINT.md) - Sistema de mensajes
+- [PRODUCTIVITY.md](./docs/PRODUCTIVITY.md) - Herramientas de productividad
+- [SPINNERS.md](./docs/SPINNERS.md) - Animaciones y spinners
+- [UTILS.md](./docs/UTILS.md) - Utilidades de bajo nivel
+- [WIREMOCK.md](./docs/WIREMOCK.md) - Servidor de mocking
 
 ---
 
