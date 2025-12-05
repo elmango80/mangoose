@@ -238,7 +238,6 @@ cdc    # cd $HOME/code
 cdw    # cd $HOME/code/grupo-santander-ods
 ```
 
-
 ## 📋 Requisitos
 
 - **Zsh** - Shell principal
