@@ -169,87 +169,6 @@ deploy security@latest          # Deploy de última versión a todos los entorno
 run_with_spinner --test         # Ver demo de spinners
 ```
 
-## 🎯 Funciones Destacadas
-
-### 🔥 phoenix
-
-Reinicia proyectos Node.js eliminando dependencias y reconstruyendo desde cero.
-
-```zsh
-phoenix              # Limpieza estándar
-phoenix --hard       # Limpieza profunda con yarn.lock y caché
-```
-
-### 🚀 deploy
-
-Sistema completo de deployment a Quicksilver con soporte multi-entorno.
-
-```zsh
-deploy security                # Selector interactivo de versiones
-deploy security@latest         # Deploy última versión
-deploy security@0.52.1         # Deploy versión específica
-deploy login@1.0.0 --dry-run  # Simulación sin cambios reales
-```
-
-### 🌲 clean_repository (gcls)
-
-Limpia ramas locales que fueron eliminadas del remoto.
-
-```zsh
-clean_repository           # Limpiar ramas huérfanas
-clean_repository --dry-run # Vista previa sin eliminar
-gcls                       # Alias corto
-```
-
-### 📁 goto
-
-Navegador interactivo de directorios con selector visual.
-
-```zsh
-goto                         # Desde directorio actual
-goto --base-dir ~/projects   # Desde directorio específico
-goto --depth 4               # Buscar hasta 4 niveles
-```
-
-### 🔍 seek_and_destroy (sad)
-
-Busca y elimina directorios específicos recursivamente.
-
-```zsh
-seek_and_destroy --dir node_modules
-sad:all                      # Elimina node_modules, dist y .yalc
-```
-
-### 💬 msg
-
-Sistema de mensajes con colores, iconos y formato.
-
-```zsh
-msg "Operación exitosa" --success
-msg "Advertencia importante" --warning
-msg "Error crítico" --error --to-stderr
-msg "Información" --info --tab 2
-```
-
-### 🎭 wiremock_run_server
-
-Servidor WireMock standalone para mocking de APIs.
-
-```zsh
-wiremock_run_server                # Puerto 8000 por defecto
-wiremock_run_server --port 9090    # Puerto personalizado
-run:wiremock                       # Alias
-```
-
-### 🔄 run_with_spinner
-
-Ejecuta comandos mostrando spinner animado.
-
-```zsh
-run_with_spinner --command "npm install" --message "Instalando..."
-run_with_spinner --command "yarn build" --message "Building..." --model "balloon"
-```
-
 ## 📋 Resumen de Comandos por Categoría
 
 ### 🔧 Productividad
@@ -287,46 +206,6 @@ run_with_spinner --command "yarn build" --message "Building..." --model "balloon
 - `read_single_char` - Leer un carácter
 - `print_indentation` - Imprimir indentación
 
-## 📝 Aliases Destacados
-
-### NPM/Yarn
-
-```zsh
-yi    # yarn install
-ya    # yarn add
-yad   # yarn add --dev
-ni    # npm install
-na    # npm add
-```
-
-### Git
-
-```zsh
-gcls       # clean_repository
-gcls:all   # clean_repositories
-gmup       # update_master_repo
-gmup:all   # update_master_repos
-gswz       # Switch branch con fzf
-```
-
-### Limpieza
-
-```zsh
-sad              # seek_and_destroy
-sad:node_modules # Eliminar node_modules
-sad:dist         # Eliminar dist
-sad:yalc         # Eliminar .yalc
-sad:all          # Eliminar todo
-```
-
-### Navegación
-
-```zsh
-cdh    # cd $HOME
-cdc    # cd $HOME/code
-cdw    # cd $HOME/code/grupo-santander-ods
-```
-
 ## 📋 Requisitos
 
 - **Zsh** - Shell principal
@@ -346,7 +225,7 @@ Las contribuciones son bienvenidas. Por favor:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## � Reportar Issues
+## 🐛 Reportar Incidencias
 
 Si encuentras un bug o tienes una sugerencia:
 
@@ -357,7 +236,7 @@ Si encuentras un bug o tienes una sugerencia:
    - Comportamiento esperado vs actual
    - Versión de Zsh y sistema operativo
 
-## �📝 Licencia
+## 📝 Licencia
 
 Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 
