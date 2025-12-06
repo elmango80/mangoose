@@ -64,19 +64,6 @@ Cada módulo tiene su propia documentación detallada:
 | **Testing**      | [testing/](./testing/)           | Servidor WireMock para mocking de APIs             |
 | **Aliases**      | [aliases/](./aliases/)           | Más de 90 aliases para npm, yarn, git, etc.        |
 
-**Documentación detallada:**
-
-- [ALIASES](./docs/ALIASES.md)
-- [COLORS](./docs/COLORS.md)
-- [DEPLOY](./docs/DEPLOY.md)
-- [GIT](./docs/GIT.md)
-- [PRINT](./docs/PRINT.md)
-- [PRODUCTIVITY](./docs/PRODUCTIVITY.md)
-- [SPINNERS](./docs/SPINNERS.md)
-- [UTILS](./docs/UTILS.md)
-- [WIREMOCK](./docs/WIREMOCK.md)
-- [CONFIGURACIÓN](./docs/configuration.md) - Variables de entorno y configuración
-
 ## 📦 Instalación
 
 ### Instalación Automática (Recomendado)
@@ -91,11 +78,90 @@ curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/inst
 Después de instalar, **edita el archivo `.env` con tus valores reales**:
 
 ```zsh
-nano ~/.config/zsh/functions/.env
+nano ~/functions/.env
 # o con tu editor preferido
+code ~/functions/.env
 ```
 
-Ver [Guía de Configuración](./docs/configuration.md) para más detalles.
+#### 🔧 Variables Disponibles
+
+##### Deployment
+
+| Variable              | Descripción                                            | Ejemplo                             |
+| --------------------- | ------------------------------------------------------ | ----------------------------------- |
+| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                    | `https://deploy-server.example.com` |
+| `DEPLOY_APP_ID`       | ID de la aplicación                                    | `100`                               |
+| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID`)  | `("auth:1001" "users:1002")`        |
+| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE`) | `("1001:DEVELOPMENT" "1003:QA")`    |
+
+**Formato de `DEPLOY_SERVICES`:**
+
+```zsh
+DEPLOY_SERVICES=(
+  "auth:1001"
+  "users:1002"
+  "data:1003"
+)
+```
+
+**Formato de `DEPLOY_ENVIRONMENTS`:**
+
+```zsh
+DEPLOY_ENVIRONMENTS=(
+  "1001:DEVELOPMENT"
+  "1002:DEVELOPMENT Contact Center"
+  "1003:QUALITY ASSURANCE"
+)
+```
+
+##### Variables de Directorios
+
+| Variable   | Descripción                                    | Ejemplo       |
+| ---------- | ---------------------------------------------- | ------------- |
+| `CODE_DIR` | Directorio base de código (relativo a `$HOME`) | `code`        |
+| `WORK_DIR` | Directorio de trabajo (relativo a `$CODE_DIR`) | `my-projects` |
+
+##### Wiremock
+
+| Variable              | Descripción               | Ejemplo                 |
+| --------------------- | ------------------------- | ----------------------- |
+| `WIREMOCK_SERVER_URL` | URL del servidor Wiremock | `http://localhost:8080` |
+
+#### 📝 Formato del archivo .env
+
+El archivo `.env` debe seguir este formato:
+
+```zsh
+# Comentarios empiezan con #
+export VARIABLE_NAME="valor"
+export OTRA_VARIABLE="valor_sin_comillas"
+
+# Arrays (para DEPLOY_SERVICES y DEPLOY_ENVIRONMENTS)
+export DEPLOY_SERVICES=(
+  "auth:1001"
+  "users:1002"
+)
+
+export DEPLOY_ENVIRONMENTS=(
+  "1001:DEVELOPMENT"
+  "1003:QA"
+)
+```
+
+**IMPORTANTE:**
+
+- ✅ Todas las variables deben tener `export` al inicio
+- ❌ NO uses espacios alrededor del `=`: `VARIABLE = valor`
+- ❌ NO uses comillas mixtas: `VARIABLE='valor"`
+
+#### 🔄 Recarga de Configuración
+
+Si modificas el archivo `.env`, recarga tu sesión:
+
+```zsh
+source ~/.zshrc
+# o simplemente abre una nueva terminal
+```
 
 O descarga primero y luego ejecuta:
 
@@ -147,20 +213,6 @@ EOF
 source ~/.zshrc
 ```
 
-### Instalación con Loop (Alternativa)
-
-```zsh
-# Cargar todos los módulos automáticamente
-cat >> ~/.zshrc << 'EOF'
-# Cargar Zsh Functions en orden
-for module_dir in core git productivity deployment testing aliases; do
-  for func_file in ~/.config/zsh/functions/$module_dir/*.zsh(N); do
-    source "$func_file"
-  done
-done
-EOF
-```
-
 ### ⚠️ Orden de Carga Importante
 
 Es crucial cargar en este orden debido a dependencias:
@@ -186,22 +238,19 @@ source ~/.zshrc
 
 Este proyecto utiliza un sistema de configuración local para proteger información sensible:
 
+### Archivos de Configuración
+
 - **✅ `.env`** - Archivo local con tus credenciales (NO se sube al repo, está en `.gitignore`)
 - **📄 `.env.example`** - Plantilla con valores dummy (incluida en el repo como referencia)
-- **🔐 Variables protegidas**:
-  - URLs de servidores
-  - IDs de aplicaciones y servicios
-  - IDs de entornos de deployment
-  - Cualquier información específica de tu organización
 
-**Importante:**
+### Variables Protegidas
 
-- ⚠️ NUNCA hagas commit del archivo `.env`
-- ⚠️ NUNCA compartas tu archivo `.env` con otros
-- ✅ Siempre usa `.env.example` como referencia
-- ✅ Cada instalación debe tener su propio `.env` configurado
+El archivo `.env` contiene información sensible como:
 
-Ver [Guía de Configuración](./docs/configuration.md) para más detalles sobre seguridad.
+- URLs de servidores
+- IDs de aplicaciones y servicios
+- IDs de entornos de deployment
+- Cualquier información específica de tu organización
 
 ## ⚡ Inicio Rápido
 
@@ -315,13 +364,13 @@ Para documentación detallada de cada módulo:
 ### Documentación Completa
 
 - [ALIASES.md](./docs/ALIASES.md) - Todos los aliases disponibles
-- [COLORS.md](./docs/COLORS.md) - Guía completa de colores
+- [COLORS.md](./core/COLORS.md) - Guía completa de colores
 - [DEPLOY.md](./docs/DEPLOY.md) - Sistema de deployment completo
 - [GIT.md](./docs/GIT.md) - Funciones Git avanzadas
-- [PRINT.md](./docs/PRINT.md) - Sistema de mensajes
+- [PRINT.md](./core/PRINT.md) - Sistema de mensajes
 - [PRODUCTIVITY.md](./docs/PRODUCTIVITY.md) - Herramientas de productividad
-- [SPINNERS.md](./docs/SPINNERS.md) - Animaciones y spinners
-- [UTILS.md](./docs/UTILS.md) - Utilidades de bajo nivel
+- [SPINNERS.md](./core/SPINNERS.md) - Animaciones y spinners
+- [UTILS.md](./core/UTILS.md) - Utilidades de bajo nivel
 - [WIREMOCK.md](./docs/WIREMOCK.md) - Servidor de mocking
 
 ---
