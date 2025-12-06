@@ -45,7 +45,7 @@ Animaciones de carga y feedback visual.
 
 **Principales características:**
 
-- Función `run_with_spinner` para ejecutar comandos con animación
+- Función `turn_the_command` para ejecutar comandos con animación
 - Múltiples estilos de spinners
 - Integración con sistema de mensajes
 - Manejo de errores visual
@@ -106,7 +106,7 @@ msg "Test message" --success
 msg "Error message" --error
 
 # Probar spinner
-run_with_spinner --command "sleep 2" --message "Procesando..."
+turn_the_command --command "sleep 2" --message "Procesando..."
 
 # Probar selector
 select_option "Opción 1" "Opción 2" "Opción 3"

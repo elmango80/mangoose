@@ -87,7 +87,7 @@ function seek_and_destroy() {
   if [[ $confirmation == "y" ]]; then
     while IFS= read -r dir
     do
-      run_with_spinner --command "rm -rf $dir" --message "Deleting $dir"
+      turn_the_command --command "rm -rf $dir" --message "Deleting $dir"
     done < "$tempfile"
   else
     rm "$tempfile"

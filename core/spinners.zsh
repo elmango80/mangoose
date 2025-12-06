@@ -2,12 +2,12 @@
 # Funciones para spinners y animaciones
 
 function test_spinner() {
-  run_with_spinner --command "sleep 3" --message "Task 1..."
-  run_with_spinner --command "sleep 3" --message "Task 2..." --model "grow-vertical" --tab 1
-  run_with_spinner --command "sleep 3 && ls /some/path" --message "Task 3 (with error)..." --model "hamburger"
+  turn_the_command --command "sleep 3" --message "Task 1..."
+  turn_the_command --command "sleep 3" --message "Task 2..." --model "grow-vertical" --tab 1
+  turn_the_command --command "sleep 3 && ls /some/path" --message "Task 3 (with error)..." --model "hamburger"
 }
 
-function run_with_spinner() {
+function turn_the_command() {
   local -A _revolver_spinners=(
     'dots' '⠋⠙⠚⠞⠖⠦⠴⠲⠳⠓'
     'balloon' ' .oO°Oo. '
@@ -84,7 +84,7 @@ function run_with_spinner() {
         shift
         ;;
       --help|-h)
-        msg "Uso: run_with_spinner [OPCIONES]"
+        msg "Uso: turn_the_command [OPCIONES]"
         msg "Ejecuta un comando con un indicador de animación giratorio."
         msg --blank
         msg "Requerido:"
@@ -105,11 +105,11 @@ function run_with_spinner() {
         msg "  star, hamburger, arc, circle"
         msg --blank
         msg "Ejemplos:"
-        msg "  run_with_spinner --test"
-        msg "  run_with_spinner --command \"sleep 5\" --message \"Procesando...\""
-        msg "  run_with_spinner --command \"npm install\" --model arc"
-        msg "  run_with_spinner --command \"make build\" --tab 2 --message \"Compilando...\""
-        msg "  run_with_spinner --command \"sleep 2\" --message \"Cargando...\" --no-newline"
+        msg "  turn_the_command --test"
+        msg "  turn_the_command --command \"sleep 5\" --message \"Procesando...\""
+        msg "  turn_the_command --command \"npm install\" --model arc"
+        msg "  turn_the_command --command \"make build\" --tab 2 --message \"Compilando...\""
+        msg "  turn_the_command --command \"sleep 2\" --message \"Cargando...\" --no-newline"
         return 0
         ;;
       *)

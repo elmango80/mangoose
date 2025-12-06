@@ -216,7 +216,7 @@ phoenix                          # Limpiar y reinstalar proyecto Node.js
 goto --depth 3                   # Navegar interactivamente por directorios
 gcls                            # Limpiar ramas Git huérfanas
 deploy security@latest          # Deploy de última versión a todos los entornos
-run_with_spinner --test         # Ver demo de spinners
+turn_the_command --test         # Ver demo de spinners
 ```
 
 ## 📋 Resumen de Comandos por Categoría
@@ -242,7 +242,7 @@ run_with_spinner --test         # Ver demo de spinners
 ### 💬 UI/Output
 
 - `msg` - Mensajes con formato
-- `run_with_spinner` - Spinners animados
+- `turn_the_command` - Spinners animados
 - `select_option` - Selector interactivo
 - `test_colors` - Ver paleta de colores
 

@@ -1,15 +1,17 @@
 # Spinners (spinners.zsh)
 
-Sistema de animaciones con spinners para feedback visual de comandos en ejecución.
+Sistema de animaciones de carga con spinners.
 
-## 🔄 run_with_spinner
+## 🔄 turn_the_command
 
-Ejecuta un comando mostrando un spinner animado mientras se procesa.
+> _"So turn the page..."_ 🎸
+
+Ejecuta un comando en segundo plano mientras muestra un spinner animado.
 
 ### Uso
 
 ```zsh
-run_with_spinner --command "tu_comando" --message "Mensaje..." [OPTIONS]
+turn_the_command --command "tu_comando" --message "Mensaje..." [OPTIONS]
 ```
 
 ### Opciones Requeridas
@@ -44,34 +46,34 @@ run_with_spinner --command "tu_comando" --message "Mensaje..." [OPTIONS]
 
 ```zsh
 # Ejemplo simple
-run_with_spinner --command "sleep 3" --message "Procesando..."
+turn_the_command --command "sleep 3" --message "Procesando..."
 
 # Con modelo personalizado
-run_with_spinner --command "npm install" --message "Instalando..." --model "balloon"
+turn_the_command --command "npm install" --message "Instalando..." --model "balloon"
 
 # Con tabulación
-run_with_spinner --command "yarn build" --message "Building..." --tab 2
+turn_the_command --command "yarn build" --message "Building..." --tab 2
 
 # Sin salto de línea final
-run_with_spinner --command "sleep 2" --message "Cargando..." --no-newline
+turn_the_command --command "sleep 2" --message "Cargando..." --no-newline
 ```
 
 ### Ejemplos Avanzados
 
 ```zsh
 # Comando que puede fallar
-run_with_spinner \
+turn_the_command \
   --command "npm test" \
   --message "Ejecutando tests..." \
   --model "grow-vertical"
 
 # Múltiples spinners en secuencia
-run_with_spinner --command "sleep 2" --message "Paso 1..."
-run_with_spinner --command "sleep 2" --message "Paso 2..." --tab 1
-run_with_spinner --command "sleep 2" --message "Paso 3..." --tab 2
+turn_the_command --command "sleep 2" --message "Paso 1..."
+turn_the_command --command "sleep 2" --message "Paso 2..." --tab 1
+turn_the_command --command "sleep 2" --message "Paso 3..." --tab 2
 
 # Con comando complejo
-run_with_spinner \
+turn_the_command \
   --command "curl -s https://api.example.com/data | jq '.results'" \
   --message "Fetching data..." \
   --model "arc" \
@@ -117,7 +119,7 @@ run_with_spinner \
 
 ```zsh
 # Ver demostración de spinners
-run_with_spinner --test
+turn_the_command --test
 ```
 
 Esta función ejecuta 3 ejemplos:
@@ -130,11 +132,11 @@ Esta función ejecuta 3 ejemplos:
 
 ```zsh
 # Capturar salida del comando
-output=$(run_with_spinner --command "ls -la" --message "Listando archivos...")
+output=$(turn_the_command --command "ls -la" --message "Listando archivos...")
 echo "$output"
 
 # Verificar éxito/error
-if run_with_spinner --command "make build" --message "Building..."; then
+if turn_the_command --command "make build" --message "Building..."; then
   msg "Build successful!" --success
 else
   msg "Build failed!" --error
@@ -189,5 +191,5 @@ El comando puede estar esperando input. Usa solo con comandos no-interactivos.
 Incrementa el `--delay` para reducir actualizaciones:
 
 ```zsh
-run_with_spinner --command "..." --message "..." --delay 0.2
+turn_the_command --command "..." --message "..." --delay 0.2
 ```

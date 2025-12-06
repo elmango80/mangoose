@@ -313,7 +313,7 @@ function deploy() {
   for ENV_ID in "${DEPLOYMENT_ORDER[@]}"; do
     local ENV_NAME="${ENVIRONMENTS[$ENV_ID]}"
     if [ "$DRY_RUN" = true ]; then
-      run_with_spinner --command "sleep 1" --message "Desplegando en $ENV_NAME"
+      turn_the_command --command "sleep 1" --message "Desplegando en $ENV_NAME"
       # Modo dry-run: solo mostrar lo que se haría
       msg "Payload: {" --tab 1 --dim
       msg "application: $DEPLOY_APP_ID" --tab 2 --dim 
@@ -325,7 +325,7 @@ function deploy() {
       SUCCESSFUL_DEPLOYMENTS+=("$ENV_NAME (dry-run)")
     else
       # Modo normal: ejecutar el deployment real
-      local RESPONSE=$(run_with_spinner \
+      local RESPONSE=$(turn_the_command \
         --message "Desplegando en $ENV_NAME" \
         --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/deployment/new' \
           -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \

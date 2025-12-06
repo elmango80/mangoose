@@ -124,9 +124,9 @@ function no_branch_for_old_refs() {
       echo -e "$other_stale_branches" | while read branch; do
         if [[ -n "$branch" ]]; then
           if [[ $demo_mode -eq 1 ]]; then
-            run_with_spinner --command "sleep 3" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+            turn_the_command --command "sleep 3" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
           else
-            run_with_spinner --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+            turn_the_command --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
           fi
           msg "\r${GREEN}✓ Rama eliminada ${RED}$branch${NC} "
         fi
@@ -148,9 +148,9 @@ function no_branch_for_old_refs() {
         fi
 
         if [[ $demo_mode -eq 1 ]]; then
-          run_with_spinner --command "sleep 3" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          turn_the_command --command "sleep 3" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         else
-          run_with_spinner --command "git branch --delete --force \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          turn_the_command --command "git branch --delete --force \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         fi
         msg "\r${GREEN}✓ Rama eliminada ${RED}$current_branch${NC} "
       fi
