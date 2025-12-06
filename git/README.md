@@ -8,11 +8,7 @@ Funciones para gestión y mantenimiento de repositorios Git.
 
 Funciones avanzadas para limpieza de ramas y sincronización de repositorios.
 
-**Ver documentación completa:** [GIT.md](../docs/GIT.md)
-
-## Funciones Principales
-
-### no_branch_for_old_refs (alias: gcls)
+### no_branch_for_old_refs
 
 Limpia ramas locales que han sido eliminadas del remoto.
 
@@ -24,19 +20,14 @@ no_branch_for_old_refs --dry-run    # Vista previa
 no_branch_for_old_refs --demo       # Simulación con delay
 ```
 
-### paranoid_sync (alias: gmup)
+### paranoid_sync
 
 Actualiza la rama principal (main/master) preservando tu rama actual y cambios sin confirmar.
 
+_"Finished with my woman 'cause she couldn't help me with my mind..."_
+
 ```zsh
 paranoid_sync                 # Actualizar master/main
-```
-
-### paranoid_sync --all (alias: gmup:all)
-
-Ejecuta `paranoid_sync` en todos los repositorios del directorio actual.
-
-```zsh
 paranoid_sync --all           # Actualizar todos los repos
 ```
 
