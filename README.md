@@ -60,16 +60,16 @@ Cada módulo tiene su propia documentación detallada:
 
 **Documentación detallada:**
 
-- [ALIASES.md](./docs/ALIASES.md)
-- [COLORS.md](./docs/COLORS.md)
-- [DEPLOY.md](./docs/DEPLOY.md)
-- [GIT.md](./docs/GIT.md)
-- [PRINT.md](./docs/PRINT.md)
-- [PRODUCTIVITY.md](./docs/PRODUCTIVITY.md)
-- [SPINNERS.md](./docs/SPINNERS.md)
-- [UTILS.md](./docs/UTILS.md)
-- [WIREMOCK.md](./docs/WIREMOCK.md)
-- [⚙️ CONFIGURACIÓN](./docs/configuration.md) - Variables de entorno y configuración
+- [ALIASES](./docs/ALIASES.md)
+- [COLORS](./docs/COLORS.md)
+- [DEPLOY](./docs/DEPLOY.md)
+- [GIT](./docs/GIT.md)
+- [PRINT](./docs/PRINT.md)
+- [PRODUCTIVITY](./docs/PRODUCTIVITY.md)
+- [SPINNERS](./docs/SPINNERS.md)
+- [UTILS](./docs/UTILS.md)
+- [WIREMOCK](./docs/WIREMOCK.md)
+- [CONFIGURACIÓN](./docs/configuration.md) - Variables de entorno y configuración
 
 ## 📦 Instalación
 
