@@ -4,12 +4,16 @@ Colección de aliases útiles para mejorar la productividad en la terminal.
 
 ## 📂 Navegación
 
+Los aliases de navegación usan las variables de entorno configuradas en `.env`:
+
 ```zsh
 cdh              # cd $HOME
-cdc              # cd $HOME/code
-cdw              # cd $HOME/code/grupo-santander-ods
+cdc              # cd $HOME/$CODE_DIR (configurable en .env)
+cdw              # cd $HOME/$CODE_DIR/$WORK_DIR (configurable en .env)
 ls               # ls -GA (con colores y sin . ni ..)
 ```
+
+**Configuración:** Edita `CODE_DIR` y `WORK_DIR` en tu archivo `.env` para personalizar estos directorios.
 
 ## 📦 NPM
 

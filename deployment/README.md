@@ -1,6 +1,6 @@
 # Deployment Functions
 
-Sistema de deployment automatizado para Quicksilver.
+Sistema de deployment automatizado.
 
 ## Archivos
 
@@ -14,7 +14,7 @@ Sistema completo de deployment a múltiples entornos.
 
 ### deploy
 
-Realiza deployment de servicios en Quicksilver a múltiples entornos de forma secuencial.
+Realiza deployment de servicios a múltiples entornos de forma secuencial.
 
 ```zsh
 deploy <service>[@version] [OPTIONS]
@@ -22,66 +22,62 @@ deploy <service>[@version] [OPTIONS]
 
 ## Servicios Disponibles
 
-| Servicio   | ID   | Descripción           |
-| ---------- | ---- | --------------------- |
-| `security` | 2701 | Servicio de seguridad |
-| `login`    | 2700 | Servicio de login     |
+> **Nota:** Los servicios deben configurarse en `~/functions/.env` en la variable `DEPLOY_SERVICES`.  
+> Los servicios listados a continuación son ejemplos ficticios a modo informativo.
+
+| Servicio | Descripción               |
+| -------- | ------------------------- |
+| `auth`   | Servicio de autenticación |
+| `users`  | Servicio de usuarios      |
+| `data`   | Servicio de datos         |
+
+Para listar los servicios realmente configurados, ejecuta:
+
+```zsh
+deploy --list-services
+```
 
 ## Entornos de Despliegue
 
+> **Nota:** Los entornos deben configurarse en `~/functions/.env` en la variable `DEPLOY_ENVIRONMENTS`.  
+> Los entornos listados a continuación son ejemplos ficticios a modo informativo.
+
 Los deployments se ejecutan en este orden:
 
-1. DEVELOPMENT (1858)
-2. DEVELOPMENT Contact Center (1906)
-3. QUALITY ASSURANCE (1891)
-4. QUALITY ASSURANCE Contact Center (1907)
-5. STAGING (1892)
-6. STAGING Contact Center (1909)
+1. Development
+2. Development Contact Center
+3. Quality Assurance
+4. Quality Assurance Contact Center
+5. Staging
+6. Staging Contact Center
 
 ## Modos de Uso
 
 ### Selector Interactivo
 
 ```zsh
-deploy security
+deploy auth
 ```
 
 ### Última Versión
 
 ```zsh
-deploy security@latest
-deploy login@latest
+deploy auth@latest
+deploy users@latest
 ```
 
 ### Versión Específica
 
 ```zsh
-deploy security@0.52.1
-deploy login@1.0.0
+deploy auth@0.52.1
+deploy users@1.0.0
 ```
 
 ### Modo Dry-Run
 
 ```zsh
-deploy security@0.52.1 --dry-run
+deploy auth@0.52.1 --dry-run
 ```
-
-## Autenticación
-
-Requiere tokens de Quicksilver:
-
-- CSRF Token
-- Session ID
-
-Los tokens están configurados en el script y deben actualizarse periódicamente.
-
-**Cómo obtener tokens:**
-
-1. Ejecuta `qs-login`
-2. Inicia sesión
-3. DevTools → Application → Cookies
-4. Copia `csrftoken` y `sessionid`
-5. Actualiza variables en el script
 
 ## Manejo de Errores
 
@@ -91,18 +87,27 @@ Los tokens están configurados en el script y deben actualizarse periódicamente
 
 ## Dependencias
 
-Requiere:
+### Scripts
 
 - `core/print.zsh` - Para mensajes
 - `core/spinners.zsh` - Para feedback
 - `core/utils.zsh` - Para select_option
 - `curl` - Para API calls
 
+### Variables de Entorno
+
+Deben configurarse en `~/functions/.env`:
+
+- `DEPLOY_SERVER_URL` - URL del servidor de deployment
+- `DEPLOY_APP_ID` - ID de la aplicación
+- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id"`)
+- `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre"`)
+
 ## Uso
 
 ```zsh
 # Cargar módulo Deployment
-source ~/.config/zsh/functions/deployment/deploy.zsh
+source ~/functions/deployment/deploy.zsh
 ```
 
 ## Alias Relacionado
@@ -117,17 +122,20 @@ deploy    # Definido en aliases/aliases.zsh
 # Ver ayuda
 deploy --help
 
+# Listar servicios disponibles
+deploy --list-services
+
 # Deploy interactivo
-deploy security
+deploy api-auth
 
 # Deploy automático de última versión
-deploy security@latest
+deploy api-auth@latest
 
 # Deploy de versión específica a todos los entornos
-deploy login@1.2.3
+deploy api-users@1.2.3
 
 # Simulación sin cambios reales
-deploy security@latest --dry-run
+deploy api-auth@latest --dry-run
 ```
 
 ## Resumen de Deployment
@@ -138,8 +146,8 @@ Al finalizar muestra:
 Resumen de Deployments
 ==========================
 Exitosos: 6
-  - DEVELOPMENT
-  - DEVELOPMENT Contact Center
+  - Development
+  - Development Contact Center
   ...
 
 Fallidos: 0
@@ -152,7 +160,7 @@ El payload enviado:
 
 ```json
 {
-  "application": 138,
+  "application": 100,
   "service": <SERVICE_ID>,
   "environment": <ENV_ID>,
   "version": "<VERSION>",

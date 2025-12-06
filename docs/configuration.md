@@ -37,7 +37,7 @@ code .env
 
 ## 🔧 Variables Disponibles
 
-### Deployment (Quicksilver)
+### Deployment
 
 | Variable                     | Descripción                                            | Ejemplo                                    |
 | ---------------------------- | ------------------------------------------------------ | ------------------------------------------ |
@@ -59,6 +59,15 @@ code .env
     "1891:QUALITY ASSURANCE"
   )
   ```
+
+### Variables de Directorios
+
+| Variable   | Descripción                                    | Ejemplo               |
+| ---------- | ---------------------------------------------- | --------------------- |
+| `CODE_DIR` | Directorio base de código (relativo a `$HOME`) | `code`                |
+| `WORK_DIR` | Directorio de trabajo (relativo a `$CODE_DIR`) | `grupo-santander-ods` |
+
+Estas variables se usan en los aliases de navegación (`cdc`, `cdw`).
 
 ### Wiremock
 
@@ -138,17 +147,25 @@ El archivo `.env` debe seguir este formato:
 
 ```zsh
 # Comentarios empiezan con #
-VARIABLE_NAME="valor"
-OTRA_VARIABLE=valor_sin_comillas
+export VARIABLE_NAME="valor"
+export OTRA_VARIABLE="valor_sin_comillas"
 
 # Líneas vacías están bien
 
-OTRA_MAS="valor con espacios"
+export OTRA_MAS="valor con espacios"
+
+# Arrays (para DEPLOY_ENVIRONMENTS)
+export MI_ARRAY=(
+  "valor1"
+  "valor2"
+)
 ```
+
+**IMPORTANTE:** Todas las variables deben tener `export` al inicio para estar disponibles en la shell.
 
 **NO uses:**
 
-- `export VARIABLE=valor` (no necesario)
+- Sin `export`: `VARIABLE=valor` ❌ (no estará disponible)
 - Espacios alrededor del `=`: `VARIABLE = valor` ❌
 - Comillas mixtas: `VARIABLE='valor"` ❌
 

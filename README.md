@@ -18,7 +18,8 @@ Colección completa de funciones y utilidades para Zsh organizadas por módulos 
 
 ```
 zsh-functions/
-├── core/           # Funciones base (colors, print, utils, spinners)
+├── core/           # Funciones base y configuración
+│   ├── env-loader.zsh  # Cargador de variables de entorno
 │   ├── colors.zsh
 │   ├── print.zsh
 │   ├── utils.zsh
@@ -33,16 +34,21 @@ zsh-functions/
 │   └── wiremock.zsh
 ├── aliases/        # Aliases
 │   └── aliases.zsh
-└── docs/           # Documentación detallada
-    ├── ALIASES.md
-    ├── COLORS.md
-    ├── DEPLOY.md
-    ├── GIT.md
-    ├── PRINT.md
-    ├── PRODUCTIVITY.md
-    ├── SPINNERS.md
-    ├── UTILS.md
-    └── WIREMOCK.md
+├── docs/           # Documentación detallada
+│   ├── ALIASES.md
+│   ├── COLORS.md
+│   ├── DEPLOY.md
+│   ├── GIT.md
+│   ├── PRINT.md
+│   ├── PRODUCTIVITY.md
+│   ├── SPINNERS.md
+│   ├── UTILS.md
+│   ├── WIREMOCK.md
+│   └── configuration.md
+├── .env.example    # Plantilla de configuración (incluida en repo)
+├── .env            # Tu configuración local (NO se sube al repo)
+├── .gitignore      # Protege .env de commits accidentales
+└── install.sh      # Script de instalación automática
 ```
 
 ## 📚 Documentación por Módulo
@@ -102,10 +108,13 @@ chmod +x /tmp/install-zsh-functions.sh
 El instalador:
 
 - ✅ Clona el repositorio en `~/.config/zsh/functions`
+- ✅ Crea el archivo `.env` desde `.env.example`
 - ✅ Hace backup de tu `.zshrc`
 - ✅ Agrega la configuración necesaria
 - ✅ Respeta configuraciones existentes
 - ✅ Permite actualizar o reinstalar
+
+**⚠️ Importante:** Después de la instalación, debes editar el `.env` con tus valores reales antes de usar comandos como `deploy`.
 
 ### Instalación Manual
 
@@ -156,13 +165,14 @@ EOF
 
 Es crucial cargar en este orden debido a dependencias:
 
-1. **core/** - Primero (base para todo)
+1. **core/env-loader.zsh** - PRIMERO (carga variables de entorno desde `.env`)
+2. **core/** - Funciones base
    - `colors.zsh` → `utils.zsh` → `print.zsh` → `spinners.zsh`
-2. **git/** - Depende de core
-3. **productivity/** - Depende de core
-4. **deployment/** - Depende de core
-5. **testing/** - Depende de core
-6. **aliases/** - Último (usa funciones de otros módulos)
+3. **git/** - Depende de core
+4. **productivity/** - Depende de core
+5. **deployment/** - Depende de core y variables de entorno
+6. **testing/** - Depende de core
+7. **aliases/** - ÚLTIMO (usa funciones de otros módulos y variables de entorno)
 
 ### Actualizar
 

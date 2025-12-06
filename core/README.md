@@ -4,6 +4,26 @@ Funciones base y utilidades fundamentales que son usadas por otros módulos.
 
 ## Archivos
 
+### env-loader.zsh
+
+Cargador de variables de entorno desde el archivo `.env`.
+
+**Características:**
+
+- Detecta automáticamente la ruta de instalación
+- Carga todas las variables desde `.env`
+- Muestra advertencias si el archivo `.env` no existe
+- Establece `ZSH_FUNCTIONS_ENV_LOADED` como indicador de estado
+
+**Variables exportadas:**
+
+- Variables de deployment (Quicksilver)
+- Variables de directorios (`CODE_DIR`, `WORK_DIR`)
+- Variables de Wiremock
+- Cualquier otra variable definida en `.env`
+
+**Ver documentación completa:** [configuration.md](../docs/configuration.md)
+
 ### colors.zsh
 
 Sistema completo de definiciones de colores ANSI, 256 colores y RGB True Color.
