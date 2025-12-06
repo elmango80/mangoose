@@ -22,12 +22,12 @@ deploy <service>[@version] [OPTIONS]
 
 ## Opciones
 
-| Opción | Descripción |
-| ------ | ----------- |
-| `--dry-run` | Modo simulación sin ejecutar deployments reales |
-| `--description "texto"` | Descripción personalizada para el deployment |
-| `-l, --list-services` | Lista todos los servicios disponibles |
-| `-h, --help` | Muestra la ayuda |
+| Opción                  | Descripción                                     |
+| ----------------------- | ----------------------------------------------- |
+| `--dry-run`             | Modo simulación sin ejecutar deployments reales |
+| `--description "texto"` | Descripción personalizada para el deployment    |
+| `-l, --list-services`   | Lista todos los servicios disponibles           |
+| `-h, --help`            | Muestra la ayuda                                |
 
 ## Servicios Disponibles
 
@@ -237,5 +237,8 @@ El payload enviado al servidor:
   "description": "deploy v<VERSION>",
   "flyway_mode": "disabled",
   "form_kind": "StepFunctions"
-}
+  }
+
+```
+
 ```
