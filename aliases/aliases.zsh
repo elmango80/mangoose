@@ -65,7 +65,7 @@ alias sad:yalc="seek_and_destroy --dir .yalc --verbose"
 alias sad:all="sad:node_modules --no-confirm && sad:dist --no-confirm && sad:yalc --no-confirm"
 
 # Git aliases
-alias gcls="clean_repository"
+alias gcls="no_branch_for_old_refs"
 alias gcls:all="clean_repositories"
 alias gmup="update_master_repo"
 alias gmup:all="update_master_repos"
