@@ -25,29 +25,29 @@ function no_branch_for_old_refs() {
         demo_mode=1
         ;;
       --help|-h)
-        printf "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto\n"
-        printf "\n"
-        printf "${BOLD}USO:${NC}\n"
-        printf "  no_branch_for_old_refs [OPCIONES]\n"
-        printf "\n"
-        printf "${BOLD}OPCIONES:${NC}\n"
-        printf "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente\n"
-        printf "  ${YELLOW}--demo, -d${NC}   Simula la eliminación de ramas con pausa (para pruebas)\n"
-        printf "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda\n"
-        printf "\n"
-        printf "${BOLD}DESCRIPCIÓN:${NC}\n"
-        printf "  Esta función identifica ramas locales que han sido eliminadas del repositorio\n"
-        printf "  remoto y las elimina de tu repositorio local. Hará lo siguiente:\n"
-        printf "  • Actualiza y limpia referencias remotas\n"
-        printf "  • Identifica ramas con estado de seguimiento 'gone'\n"
-        printf "  • Elimina ramas obsoletas (excepto la rama actual)\n"
-        printf "  • Pregunta antes de eliminar la rama actual si también está obsoleta\n"
-        printf "\n"
-        printf "${BOLD}EJEMPLOS:${NC}\n"
-        printf "  no_branch_for_old_refs                  # Limpia ramas obsoletas\n"
-        printf "  no_branch_for_old_refs --dry-run        # Previsualiza qué se eliminaría\n"
-        printf "  no_branch_for_old_refs --demo           # Simula eliminación para pruebas\n"
-        printf "  no_branch_for_old_refs --demo --dry-run # Previsualiza y luego simula\n"
+        msg "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto"
+        msg --blank
+        msg "${BOLD}USO:${NC}"
+        msg "  no_branch_for_old_refs [OPCIONES]"
+        msg --blank
+        msg "${BOLD}OPCIONES:${NC}"
+        msg "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente"
+        msg "  ${YELLOW}--demo, -d${NC}   Simula la eliminación de ramas con pausa (para pruebas)"
+        msg "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda"
+        msg --blank
+        msg "${BOLD}DESCRIPCIÓN:${NC}"
+        msg "  Esta función identifica ramas locales que han sido eliminadas del repositorio"
+        msg "  remoto y las elimina de tu repositorio local. Hará lo siguiente:"
+        msg "  • Actualiza y limpia referencias remotas"
+        msg "  • Identifica ramas con estado de seguimiento 'gone'"
+        msg "  • Elimina ramas obsoletas (excepto la rama actual)"
+        msg "  • Pregunta antes de eliminar la rama actual si también está obsoleta"
+        msg --blank
+        msg "${BOLD}EJEMPLOS:${NC}"
+        msg "  no_branch_for_old_refs                  # Limpia ramas obsoletas"
+        msg "  no_branch_for_old_refs --dry-run        # Previsualiza qué se eliminaría"
+        msg "  no_branch_for_old_refs --demo           # Simula eliminación para pruebas"
+        msg "  no_branch_for_old_refs --demo --dry-run # Previsualiza y luego simula"
         return 0
         ;;
       *)
