@@ -66,7 +66,7 @@ alias sad:all="sad:node_modules --no-confirm && sad:dist --no-confirm && sad:yal
 
 # Git aliases
 alias gcls="no_branch_for_old_refs"
-alias gcls:all="clean_repositories"
+alias gcls:all="no_branch_for_old_refs --all"
 alias gmup="update_master_repo"
 alias gmup:all="update_master_repos"
 alias gce="git commit --allow-empty -m 'empty commit'"

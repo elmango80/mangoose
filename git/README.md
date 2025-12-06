@@ -24,15 +24,6 @@ no_branch_for_old_refs --dry-run    # Vista previa
 no_branch_for_old_refs --demo       # Simulación con delay
 ```
 
-### clean_repositories (alias: gcls:all)
-
-Ejecuta `no_branch_for_old_refs` en múltiples repositorios dentro de un directorio.
-
-```zsh
-clean_repositories            # Limpiar todos los repos
-clean_repositories --dry-run  # Vista previa en todos
-```
-
 ### update_master_repo (alias: gmup)
 
 Actualiza la rama principal (master/main) desde el remoto.
@@ -79,7 +70,7 @@ Definidos en `aliases/aliases.zsh`:
 
 ```zsh
 gcls         # no_branch_for_old_refs
-gcls:all     # clean_repositories
+gcls:all     # no_branch_for_old_refs --all
 gmup         # update_master_repo
 gmup:all     # update_master_repos
 gce          # git commit --allow-empty

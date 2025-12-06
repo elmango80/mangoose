@@ -14,6 +14,7 @@ function is_git_repository() {
 function no_branch_for_old_refs() {
   local dry_run=0
   local demo_mode=0
+  local all_repos=0
 
   # Procesar parámetros
   while [[ $# -gt 0 ]]; do
@@ -24,6 +25,9 @@ function no_branch_for_old_refs() {
       --demo|-d)
         demo_mode=1
         ;;
+      --all|-a)
+        all_repos=1
+        ;;
       --help|-h)
         msg "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto"
         msg --blank
@@ -33,6 +37,7 @@ function no_branch_for_old_refs() {
         msg "${BOLD}OPCIONES:${NC}"
         msg "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente"
         msg "  ${YELLOW}--demo, -d${NC}   Simula la eliminación de ramas con pausa (para pruebas)"
+        msg "  ${YELLOW}--all, -a${NC}    Ejecuta la limpieza en todos los repositorios del directorio actual"
         msg "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda"
         msg --blank
         msg "${BOLD}DESCRIPCIÓN:${NC}"
@@ -44,10 +49,11 @@ function no_branch_for_old_refs() {
         msg "  • Pregunta antes de eliminar la rama actual si también está obsoleta"
         msg --blank
         msg "${BOLD}EJEMPLOS:${NC}"
-        msg "  no_branch_for_old_refs                  # Limpia ramas obsoletas"
+        msg "  no_branch_for_old_refs                  # Limpia ramas obsoletas del repositorio actual"
         msg "  no_branch_for_old_refs --dry-run        # Previsualiza qué se eliminaría"
         msg "  no_branch_for_old_refs --demo           # Simula eliminación para pruebas"
-        msg "  no_branch_for_old_refs --demo --dry-run # Previsualiza y luego simula"
+        msg "  no_branch_for_old_refs --all            # Limpia todos los repositorios del directorio actual"
+        msg "  no_branch_for_old_refs --all --dry-run  # Previsualiza todos los repositorios"
         return 0
         ;;
       *)
@@ -59,12 +65,39 @@ function no_branch_for_old_refs() {
     shift
   done
 
+  # Si se especifica --all, ejecutar recursivamente en todos los repositorios
+  if [[ $all_repos -eq 1 ]]; then
+    local processed_count=0
+    for d in */
+    do
+      cd "$d"
+      # Reconstruir los parámetros sin --all
+      local params=()
+      [[ $dry_run -eq 1 ]] && params+=(--dry-run)
+      [[ $demo_mode -eq 1 ]] && params+=(--demo)
+      
+      no_branch_for_old_refs "${params[@]}"
+      ((processed_count++))
+      cd ..
+    done
+    
+    if [[ $processed_count -eq 0 ]]; then
+      msg "No se encontraron repositorios en el directorio actual" --warning
+    else
+      msg --blank
+      msg "🎉 Todos los repositorios limpiados" --success
+    fi
+    return 0
+  fi
+
   if is_git_repository
   then
     local repo_name=$(basename `git rev-parse --show-toplevel`)
     local current_branch=$(git branch --show-current)
     local git_master_branch=$(git_main_branch)
     
+    msg "Iniciando limpieza en ${GREEN}$repo_name${NC}"
+
     # Actualizar referencias remotas
     git fetch --prune > /dev/null 2>&1
 
@@ -91,7 +124,7 @@ function no_branch_for_old_refs() {
     
     # Si no hay ramas para eliminar
     if [[ -z "$all_stale_branches" ]]; then
-      msg "No se encontraron ramas obsoletas en $repo_name" --success
+      msg "No se encontraron ramas obsoletas" --success
       return 0
     fi
 
@@ -157,24 +190,9 @@ function no_branch_for_old_refs() {
     fi
 
     if [[ -n "$other_stale_branches" || $current_branch_is_stale -eq 1 ]]; then
-      msg "Limpieza completada para ${BOLD_CYAN}$repo_name${NC}" --success
+      msg "Limpieza completada en ${BOLD_CYAN}$repo_name${NC}" --success
     fi
   fi
-}
-
-function clean_repositories() {
-  printf "${GREEN}Limpiando repositorios...${NC}\n"
-  for d in */
-  do
-    if [[ -d "$d/.git" ]]
-    then
-      printf "Procesando ${CYAN}$d${NC}\n"
-      cd "$d"
-      no_branch_for_old_refs "$@"
-      cd ..
-    fi
-  done
-  printf "🎉 Todos los repositorios limpiados\n"
 }
 
 function update_master_repo() {
