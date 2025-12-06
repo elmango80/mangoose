@@ -19,11 +19,18 @@ function deploy() {
     msg --blank
     msg "Opciones:"
     msg "  --dry-run                   Modo simulación sin ejecutar deployments reales"
+    msg "  -l, --list-services         Lista todos los servicios disponibles"
     msg "  -h, --help                  Muestra esta ayuda"
     msg --blank
     msg "Servicios disponibles:"
-    msg "  security                    Servicio de seguridad"
-    msg "  login                       Servicio de login"
+    # Listar servicios dinámicamente desde DEPLOY_SERVICES
+    if [[ -n "${DEPLOY_SERVICES}" ]] && [[ ${#DEPLOY_SERVICES[@]} -gt 0 ]]; then
+      for service_entry in "${DEPLOY_SERVICES[@]}"; do
+        local service_name="${service_entry%%:*}"
+        local service_id="${service_entry#*:}"
+        msg "  ${service_name}$(printf '%*s' $((28 - ${#service_name})) '')ID: ${service_id}"
+      done
+    fi
     msg --blank
     msg "Entornos de despliegue:"
     msg "  1. DEVELOPMENT"
@@ -38,13 +45,8 @@ function deploy() {
     msg "  deploy security@latest                 # Despliega última versión disponible"
     msg "  deploy security@0.52.1                 # Despliega versión específica"
     msg "  deploy login@0.52.1 --dry-run          # Simula deployment sin ejecutar"
+    msg "  deploy --list-services                 # Lista todos los servicios disponibles"
     msg "  deploy --help                          # Muestra esta ayuda"
-    msg --blank
-    msg "Notas:"
-    msg "  • Sin @version: Muestra selector interactivo de versiones"
-    msg "  • Con @latest: Despliega automáticamente la última versión"
-    msg "  • Con @version específica: Valida y despliega esa versión"
-    msg "  • Modo --dry-run: Simula el proceso sin hacer cambios reales"
     msg --blank
     msg "Cómo obtener el token CSRF:"
     msg "  1. Ejecuta: qs-login (abre Quicksilver en el navegador)"
@@ -53,9 +55,33 @@ function deploy() {
     msg "  4. Copia el valor de 'csrftoken'"
   }
   
-  # Verificar --help como primer argumento (sin servicio)
+  # Función interna para listar servicios
+  list_services() {
+    if [[ -z "${DEPLOY_SERVICES}" ]] || [[ ${#DEPLOY_SERVICES[@]} -eq 0 ]]; then
+      msg "No hay servicios configurados" --warning
+      msg "Configura los servicios en: ~/.config/zsh/functions/.env" --dim
+      return 1
+    fi
+    
+    msg "Servicios disponibles para deployment:" --info
+    msg --blank
+    for service_entry in "${DEPLOY_SERVICES[@]}"; do
+      local service_name="${service_entry%%:*}"
+      local service_id="${service_entry#*:}"
+      msg "• ${service_name}$(printf '%*s' $((30 - ${#service_name})) '')ID: ${service_id}" --success --no-icon --tab 1
+    done
+    msg --blank
+    msg "Total: ${#DEPLOY_SERVICES[@]} servicio(s)" --dim
+  }
+  
+  # Verificar --help o --list-services como primer argumento (sin servicio)
   if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     show_help
+    return 0
+  fi
+  
+  if [[ "$1" == "--list-services" ]] || [[ "$1" == "-l" ]]; then
+    list_services
     return 0
   fi
   
@@ -79,26 +105,37 @@ function deploy() {
     SPECIFIC_VERSION=""
   fi
   
-  # Validar el servicio
-  case "$SERVICE" in
-    security)
-      SERVICE_ID="${DEPLOY_SERVICE_SECURITY_ID}"
-      ;;
-    login)
-      SERVICE_ID="${DEPLOY_SERVICE_LOGIN_ID}"
-      ;;
-    *)
-      msg "Error: Servicio desconocido '$SERVICE'" --error
-      msg "Usa 'deploy --help' para ver los servicios disponibles"
-      return 1
-      ;;
-  esac
-  
-  # Verificar que las variables de entorno estén configuradas
-  if [[ -z "$SERVICE_ID" ]]; then
-    msg "Error: Variable de entorno no configurada para el servicio '$SERVICE'" --error
-    msg "Por favor, configura el archivo .env con los valores correctos" --dim
+  # Verificar que DEPLOY_SERVICES esté configurado
+  if [[ -z "${DEPLOY_SERVICES}" ]] || [[ ${#DEPLOY_SERVICES[@]} -eq 0 ]]; then
+    msg "Error: No hay servicios configurados" --error
+    msg "Por favor, configura el archivo .env con los servicios disponibles" --dim
     msg "Ver: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
+
+  # Buscar el servicio en el array DEPLOY_SERVICES
+  local SERVICE_FOUND=false
+  for service_entry in "${DEPLOY_SERVICES[@]}"; do
+    local service_name="${service_entry%%:*}"
+    local service_id="${service_entry#*:}"
+    
+    if [[ "$service_name" == "$SERVICE" ]]; then
+      SERVICE_ID="$service_id"
+      SERVICE_FOUND=true
+      break
+    fi
+  done
+  
+  # Validar que el servicio fue encontrado
+  if [[ "$SERVICE_FOUND" == false ]]; then
+    msg "Error: El servicio '$SERVICE' no está definido en la configuración" --error
+    msg "Servicios disponibles:" --dim
+    for service_entry in "${DEPLOY_SERVICES[@]}"; do
+      local service_name="${service_entry%%:*}"
+      msg "  - $service_name" --dim
+    done
+    msg --blank
+    msg "Para agregar el servicio, edita: ~/.config/zsh/functions/.env" --dim
     return 1
   fi
   
