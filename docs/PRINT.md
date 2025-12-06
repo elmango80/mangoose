@@ -334,7 +334,7 @@ Esta función es usada por:
 - `phoenix` - Feedback de operaciones
 - `seek_and_destroy` - Confirmaciones
 - `run_with_spinner` - Estados finales
-- `clean_repository` - Reportes de limpieza
+- `no_branch_for_old_refs` - Reportes de limpieza
 
 ## 🧪 Testing
 

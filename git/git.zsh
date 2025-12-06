@@ -11,7 +11,7 @@ function is_git_repository() {
   return 0
 }
 
-function clean_repository() {
+function no_branch_for_old_refs() {
   local dry_run=0
   local demo_mode=0
 
@@ -25,10 +25,10 @@ function clean_repository() {
         demo_mode=1
         ;;
       --help|-h)
-        printf "${GREEN}clean_repository${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto\n"
+        printf "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto\n"
         printf "\n"
         printf "${BOLD}USO:${NC}\n"
-        printf "  clean_repository [OPCIONES]\n"
+        printf "  no_branch_for_old_refs [OPCIONES]\n"
         printf "\n"
         printf "${BOLD}OPCIONES:${NC}\n"
         printf "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente\n"
@@ -44,10 +44,10 @@ function clean_repository() {
         printf "  • Pregunta antes de eliminar la rama actual si también está obsoleta\n"
         printf "\n"
         printf "${BOLD}EJEMPLOS:${NC}\n"
-        printf "  clean_repository                  # Limpia ramas obsoletas\n"
-        printf "  clean_repository --dry-run        # Previsualiza qué se eliminaría\n"
-        printf "  clean_repository --demo           # Simula eliminación para pruebas\n"
-        printf "  clean_repository --demo --dry-run # Previsualiza y luego simula\n"
+        printf "  no_branch_for_old_refs                  # Limpia ramas obsoletas\n"
+        printf "  no_branch_for_old_refs --dry-run        # Previsualiza qué se eliminaría\n"
+        printf "  no_branch_for_old_refs --demo           # Simula eliminación para pruebas\n"
+        printf "  no_branch_for_old_refs --demo --dry-run # Previsualiza y luego simula\n"
         return 0
         ;;
       *)
@@ -170,7 +170,7 @@ function clean_repositories() {
     then
       printf "Procesando ${CYAN}$d${NC}\n"
       cd "$d"
-      clean_repository
+      no_branch_for_old_refs "$@"
       cd ..
     fi
   done

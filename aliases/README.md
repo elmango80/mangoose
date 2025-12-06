@@ -38,7 +38,7 @@ yre   yreg  yl    yu     yw    ywi   yx
 ### 🔀 Git
 
 ```zsh
-gcls         # clean_repository
+gcls         # no_branch_for_old_refs
 gcls:all     # clean_repositories
 gmup         # update_master_repo
 gmup:all     # update_master_repos

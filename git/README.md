@@ -12,19 +12,21 @@ Funciones avanzadas para limpieza de ramas y sincronización de repositorios.
 
 ## Funciones Principales
 
-### clean_repository (alias: gcls)
+### no_branch_for_old_refs (alias: gcls)
 
 Limpia ramas locales que han sido eliminadas del remoto.
 
+> _"No Country for Old Men - There's no place here for old refs."_
+
 ```zsh
-clean_repository              # Limpiar ramas huérfanas
-clean_repository --dry-run    # Vista previa
-clean_repository --demo       # Simulación con delay
+no_branch_for_old_refs              # Limpiar ramas huérfanas
+no_branch_for_old_refs --dry-run    # Vista previa
+no_branch_for_old_refs --demo       # Simulación con delay
 ```
 
 ### clean_repositories (alias: gcls:all)
 
-Ejecuta `clean_repository` en múltiples repositorios dentro de un directorio.
+Ejecuta `no_branch_for_old_refs` en múltiples repositorios dentro de un directorio.
 
 ```zsh
 clean_repositories            # Limpiar todos los repos
@@ -76,7 +78,7 @@ source ~/.config/zsh/functions/git/git.zsh
 Definidos en `aliases/aliases.zsh`:
 
 ```zsh
-gcls         # clean_repository
+gcls         # no_branch_for_old_refs
 gcls:all     # clean_repositories
 gmup         # update_master_repo
 gmup:all     # update_master_repos

@@ -98,7 +98,7 @@ sad:all          # Eliminar node_modules, dist y .yalc (sin confirmación)
 ## 🔀 Git
 
 ```zsh
-gcls             # clean_repository - Limpiar ramas huérfanas
+gcls             # no_branch_for_old_refs - Limpiar ramas huérfanas
 gcls:all         # clean_repositories - Limpiar en todos los repos
 gmup             # update_master_repo - Actualizar master/main
 gmup:all         # update_master_repos - Actualizar en todos los repos

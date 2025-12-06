@@ -225,7 +225,7 @@ run_with_spinner --test         # Ver demo de spinners
 
 - `phoenix` - Reiniciar proyecto Node.js
 - `goto` - Navegador de directorios
-- `seek_and_destroy` (sad) - Eliminar directorios recursivamente
+- `seek_and_destroy` - Eliminar directorios recursivamente
 - `zre` - Recargar configuración zsh
 
 ### 🚀 Deployment
@@ -234,10 +234,10 @@ run_with_spinner --test         # Ver demo de spinners
 
 ### 🌲 Git
 
-- `clean_repository` (gcls) - Limpiar ramas huérfanas
-- `clean_repositories` (gcls:all) - Limpiar múltiples repos
-- `update_master_repo` (gmup) - Actualizar rama principal
-- `update_master_repos` (gmup:all) - Actualizar múltiples repos
+- `no_branch_for_old_refs` - Limpiar ramas huérfanas
+- `clean_repositories` - Limpiar múltiples repos
+- `update_master_repo` - Actualizar rama principal
+- `update_master_repos` - Actualizar múltiples repos
 
 ### 💬 UI/Output
 
