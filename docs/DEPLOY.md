@@ -1,259 +1,244 @@
-# Deploy Functions (deploy.zsh)
+# Deployment Functions
 
-Sistema de deployment automatizado para Quicksilver.
+Sistema de deployment automatizado.
 
-## ⚙️ Configuración Requerida
+## Archivos
 
-Antes de usar este módulo, debes configurar las variables de entorno en `~/.config/zsh/functions/.env`:
+### deploy.zsh
 
-```zsh
-# URL del servidor de deployment
-DEPLOY_SERVER_URL="https://your-server.example.com"
+Sistema completo de deployment a múltiples entornos.
 
-# ID de la aplicación
-DEPLOY_APP_ID="138"
+**Ver documentación completa:** [DEPLOY.md](../docs/DEPLOY.md)
 
-# IDs de servicios
-DEPLOY_SERVICE_SECURITY_ID="2701"
-DEPLOY_SERVICE_LOGIN_ID="2700"
+## Función Principal
 
-# Entornos de deployment (orden de ejecución)
-DEPLOY_ENVIRONMENTS=(
-  "1858:DEVELOPMENT"
-  "1906:DEVELOPMENT Contact Center"
-  "1891:QUALITY ASSURANCE"
-  "1907:QUALITY ASSURANCE Contact Center"
-  "1892:STAGING"
-  "1909:STAGING Contact Center"
-)
-```
+### deploy
 
-📖 Ver [Guía de Configuración](./configuration.md) para más detalles.
-
-## 🚀 deploy
-
-Realiza deployment de servicios en Quicksilver a múltiples entornos de forma secuencial.
-
-### Uso
+Realiza deployment de servicios a múltiples entornos de forma secuencial.
 
 ```zsh
 deploy <service>[@version] [OPTIONS]
 ```
 
-### Argumentos
+## Opciones
 
-- `<service>` - **REQUERIDO** - Servicio a desplegar (`security`, `login`)
-- `[@version]` - **OPCIONAL** - Versión específica o `latest`
+| Opción                  | Descripción                                     |
+| ----------------------- | ----------------------------------------------- |
+| `--dry-run`             | Modo simulación sin ejecutar deployments reales |
+| `--description "texto"` | Descripción personalizada para el deployment    |
+| `-l, --list-services`   | Lista todos los servicios disponibles           |
+| `-h, --help`            | Muestra la ayuda                                |
 
-### Opciones
+## Servicios Disponibles
 
-- `--dry-run` - Modo simulación sin ejecutar deployments reales
-- `-h, --help` - Muestra ayuda
+> **Nota:** Los servicios deben configurarse en `~/functions/.env` en la variable `DEPLOY_SERVICES`.  
+> Los servicios listados a continuación son ejemplos ficticios a modo informativo.
 
-### Servicios Disponibles
+| Servicio | Descripción               |
+| -------- | ------------------------- |
+| `auth`   | Servicio de autenticación |
+| `users`  | Servicio de usuarios      |
+| `data`   | Servicio de datos         |
 
-Los servicios y sus IDs se configuran en el archivo `.env`:
-
-| Servicio   | Variable                     | Descripción           |
-| ---------- | ---------------------------- | --------------------- |
-| `security` | `DEPLOY_SERVICE_SECURITY_ID` | Servicio de seguridad |
-| `login`    | `DEPLOY_SERVICE_LOGIN_ID`    | Servicio de login     |
-
-### Entornos de Despliegue
-
-Los entornos y el orden de deployment se configuran en `DEPLOY_ENVIRONMENTS` en el archivo `.env`.
-
-El deployment se ejecuta secuencialmente en el orden definido en la configuración.
-
-### Modos de Operación
-
-#### Sin versión especificada
-
-Muestra un selector interactivo con las últimas versiones disponibles:
+Para listar los servicios realmente configurados, ejecuta:
 
 ```zsh
-deploy security
+deploy --list-services
 ```
 
-El sistema:
+## Entornos de Despliegue
 
-1. Consulta las versiones disponibles
-2. Muestra un selector visual
-3. Permite elegir con flechas ↑/↓
-4. Despliega la versión seleccionada a todos los entornos
+> **Nota:** Los entornos deben configurarse en `~/functions/.env` en la variable `DEPLOY_ENVIRONMENTS`.  
+> Los entornos listados a continuación son ejemplos ficticios a modo informativo.
 
-#### Con `@latest`
+Los deployments se ejecutan en este orden:
 
-Despliega automáticamente la última versión disponible:
+1. Development
+2. Development Contact Center
+3. Quality Assurance
+4. Quality Assurance Contact Center
+5. Staging
+6. Staging Contact Center
+
+## Modos de Uso
+
+### Selector Interactivo
 
 ```zsh
-deploy security@latest
-deploy login@latest
+deploy auth
 ```
 
-#### Con versión específica
-
-Despliega una versión concreta:
+### Última Versión
 
 ```zsh
-deploy security@0.52.1
-deploy login@1.0.0
+deploy auth@latest
+deploy users@latest
+```
+
+### Versión Específica
+
+```zsh
+deploy auth@0.52.1
+deploy users@1.0.0
 ```
 
 ### Modo Dry-Run
 
-Simula el proceso sin hacer cambios reales:
-
 ```zsh
-deploy security@0.52.1 --dry-run
+deploy auth@0.52.1 --dry-run
 ```
 
-En este modo:
-
-- Muestra los payloads que se enviarían
-- No ejecuta deployments reales
-- Útil para validar configuración
-
-### Autenticación
-
-El script solicita tokens de autenticación interactivamente cada vez que se ejecuta:
-
-1. **CSRF Token** - Para protección CSRF
-2. **Session ID** - Para autenticación de sesión
-
-#### Cómo obtener los tokens:
-
-1. El script abre automáticamente Quicksilver en tu navegador
-2. Inicia sesión con tus credenciales
-3. Abre DevTools (Cmd+Option+I en Mac, F12 en Windows/Linux)
-4. Ve a la pestaña **Application** > **Cookies**
-5. Busca y copia los valores de:
-   - `csrftoken`
-   - `sessionid`
-6. Pega cada uno cuando el script te lo solicite
-
-**Nota:** Los tokens expiran, por lo que debes obtenerlos nuevos en cada sesión de deployment.
-
-#### Cómo obtener tokens
-
-1. Ejecuta `qs-login` (abre Quicksilver en el navegador)
-2. Inicia sesión con tus credenciales
-3. Abre DevTools (Cmd+Option+I) → Application → Cookies
-4. Copia los valores de:
-   - `csrftoken`
-   - `sessionid`
-5. Actualiza las variables en el script
-
-### Ejemplos
+### Descripción Personalizada
 
 ```zsh
-# Selector interactivo
-deploy security
+# Con descripción personalizada
+deploy auth@1.0.0 --description "Hotfix crítico - Issue #123"
 
-# Deploy de última versión
-deploy security@latest
+# Combinar con dry-run
+deploy users@2.0.0 --description "Release Q4" --dry-run
+```
 
-# Deploy de versión específica
-deploy login@0.52.1
+> **Nota:** Si no se especifica `--description`, se usa la descripción predeterminada: `deploy vX.Y.Z`
 
-# Simulación
-deploy security@0.52.1 --dry-run
+## Autenticación
 
+Requiere tokens de autenticación:
+
+- **CSRF Token** - Token de seguridad del servidor
+- **Session ID** - ID de sesión del usuario
+
+**Cómo obtener tokens:**
+
+1. Ejecuta `qs-login`
+2. Inicia sesión con tus credenciales
+3. DevTools → Application → Cookies
+4. Copia `csrftoken` y `sessionid`
+5. Los tokens se solicitan al ejecutar el comando
+
+## Manejo de Errores
+
+- **401/403** - Token expirado (aborta)
+- **000** - Sin conexión (aborta)
+- **Otros** - Continúa con siguiente entorno
+
+## Dependencias
+
+### Scripts
+
+- `core/print.zsh` - Para mensajes
+- `core/spinners.zsh` - Para feedback
+- `core/utils.zsh` - Para select_option
+- `curl` - Para API calls
+
+### Variables de Entorno
+
+Deben configurarse en `~/functions/.env`:
+
+- `DEPLOY_SERVER_URL` - URL del servidor de deployment
+- `DEPLOY_APP_ID` - ID de la aplicación
+- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id"`)
+- `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre"`)
+
+## Uso
+
+```zsh
+# Cargar módulo Deployment
+source ~/functions/deployment/deploy.zsh
+```
+
+## Alias Relacionado
+
+```zsh
+deploy    # Definido en aliases/aliases.zsh
+```
+
+## Ejemplo Completo
+
+```zsh
 # Ver ayuda
 deploy --help
+
+# Listar servicios disponibles
+deploy --list-services
+
+# Deploy interactivo (selecciona versión de una lista)
+deploy auth
+
+# Deploy automático de última versión
+deploy auth@latest
+
+# Deploy de versión específica a todos los entornos
+deploy users@1.2.3
+
+# Deploy con descripción personalizada
+deploy auth@1.0.0 --description "Hotfix producción"
+
+# Simulación sin cambios reales
+deploy auth@latest --dry-run
+
+# Combinando opciones
+deploy users@2.0.0 --description "Release Q4 2025" --dry-run
 ```
 
-### Manejo de Errores
+## Resumen de Deployment
 
-El sistema maneja diferentes tipos de errores:
-
-#### Error 401/403
-
-```
-Token CSRF inválido o expirado
-El token de autenticación ha expirado o es inválido.
-Por favor, obtén un nuevo token CSRF y actualiza el script.
-```
-
-**Solución**: Actualizar los tokens en el script.
-
-#### Error de Conexión (000)
-
-```
-Error de conexión
-No se pudo conectar al servidor de Quicksilver.
-Verifica que estés conectado a la VPN y que el servidor esté accesible
-```
-
-**Solución**: Conectarse a la VPN corporativa.
-
-#### Variables de Entorno No Configuradas
-
-```
-Error: Variable DEPLOY_SERVER_URL no configurada
-Por favor, configura el archivo .env con la URL del servidor
-Ver: ~/.config/zsh/functions/.env
-```
-
-**Solución**: Edita el archivo `.env` y configura todas las variables necesarias. Ver [Guía de Configuración](./configuration.md).
-
-#### Otros Errores HTTP
-
-Muestra el código de estado HTTP y continúa o aborta según la severidad.
-
-### Resumen de Deployment
-
-Al finalizar, muestra un resumen:
+Al finalizar muestra:
 
 ```
 Resumen de Deployments
 ==========================
 Exitosos: 6
-  - DEVELOPMENT
-  - DEVELOPMENT Contact Center
-  - QUALITY ASSURANCE
-  - QUALITY ASSURANCE Contact Center
-  - STAGING
-  - STAGING Contact Center
+  - Development
+  - Development Contact Center
+  ...
 
 Fallidos: 0
 ========================================
 ```
 
-## 🔒 Seguridad
+## Configuración
 
-- **Información Sensible**: URLs, IDs de servicios y entornos se almacenan en `.env` (NO se sube al repositorio)
-- **Tokens de Sesión**: Se solicitan interactivamente, no se almacenan
-- **Configuración Local**: El archivo `.env` debe crearse manualmente en cada instalación
-- **Git Ignore**: El archivo `.env` está en `.gitignore` y nunca se versionará
+### Formato del Payload
 
-### Configuración
-
-#### Payload del Deployment
+El payload enviado al servidor:
 
 ```json
 {
-  "application": 138,
+  "application": 100,
+  "service": <SERVICE_ID>,
+  "environment": <ENV_ID>,
+  "version": "<VERSION>",
+  "description": "<DESCRIPTION>",
+  "flyway_mode": "disabled",
+  "form_kind": "StepFunctions"
+}
+```
+
+### Descripciones
+
+- **Predeterminada**: `deploy vX.Y.Z` (e.g., `deploy v1.0.0`)
+- **Latest**: `deploy latest version`
+- **Personalizada**: El texto proporcionado con `--description`
+
+## Características
+
+- ✅ Soporte para múltiples servicios (configurables)
+- ✅ Deployment secuencial a múltiples entornos
+- ✅ Selector interactivo de versiones
+- ✅ Modo dry-run para pruebas
+- ✅ Descripciones personalizadas
+- ✅ Validación de servicios configurados
+- ✅ Manejo robusto de errores
+- ✅ Feedback visual con spinners
+- ✅ Resumen detallado al finalizar
   "service": <SERVICE_ID>,
   "environment": <ENV_ID>,
   "version": "<VERSION>",
   "description": "deploy v<VERSION>",
   "flyway_mode": "disabled",
   "form_kind": "StepFunctions"
-}
+  }
+
 ```
 
-### Dependencias
-
-- `curl` - Para llamadas HTTP
-- `msg` - Sistema de mensajes del proyecto
-- `run_with_spinner` - Para feedback visual
-- `select_option` - Selector interactivo de opciones
-
-### 📝 Notas
-
-- Los deployments son **secuenciales**, no paralelos
-- Si falla un deployment crítico (401/403/conexión), se abortan los siguientes
-- Los tokens expiran periódicamente y deben renovarse
-- Requiere conexión a la VPN corporativa
-- El modo dry-run es útil para validar antes de desplegar
+```

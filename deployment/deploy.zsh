@@ -7,6 +7,7 @@ function deploy() {
   local SERVICE_ID=""
   local DRY_RUN=false
   local SPECIFIC_VERSION=""
+  local CUSTOM_DESCRIPTION=""
   
   # Función interna para mostrar ayuda
   show_help() {
@@ -19,6 +20,7 @@ function deploy() {
     msg --blank
     msg "Opciones:"
     msg "  --dry-run                   Modo simulación sin ejecutar deployments reales"
+    msg "  -d, --description \"text\"  Descripción personalizada para el deployment"
     msg "  -l, --list-services         Lista todos los servicios disponibles"
     msg "  -h, --help                  Muestra esta ayuda"
     msg --blank
@@ -41,12 +43,13 @@ function deploy() {
     msg "  6. STAGING Contact Center"
     msg --blank
     msg "Ejemplos:"
-    msg "  deploy security                        # Lista versiones y selecciona interactivamente"
-    msg "  deploy security@latest                 # Despliega última versión disponible"
-    msg "  deploy security@0.52.1                 # Despliega versión específica"
-    msg "  deploy login@0.52.1 --dry-run          # Simula deployment sin ejecutar"
-    msg "  deploy --list-services                 # Lista todos los servicios disponibles"
-    msg "  deploy --help                          # Muestra esta ayuda"
+    msg "  deploy security                                            # Lista versiones y selecciona interactivamente"
+    msg "  deploy security@latest                                     # Despliega última versión disponible"
+    msg "  deploy security@0.52.1                                     # Despliega versión específica"
+    msg "  deploy login@0.52.1 --dry-run                              # Simula deployment sin ejecutar"
+    msg "  deploy security@1.0.0 --description \"Hotfix producción\"  # Con descripción personalizada"
+    msg "  deploy --list-services                                     # Lista todos los servicios disponibles"
+    msg "  deploy --help                                              # Muestra esta ayuda"
     msg --blank
     msg "Cómo obtener el token CSRF:"
     msg "  1. Ejecuta: qs-login (abre Quicksilver en el navegador)"
@@ -146,6 +149,14 @@ function deploy() {
         DRY_RUN=true
         shift
         ;;
+      --description|-d)
+        if [[ -z "$2" ]] || [[ "$2" == --* ]]; then
+          msg "Error: --description requiere un valor" --error
+          return 1
+        fi
+        CUSTOM_DESCRIPTION="$2"
+        shift 2
+        ;;
       --help|-h)
         show_help
         return 0
@@ -220,10 +231,10 @@ function deploy() {
     # Modo con versión específica: service@latest o service@0.52.1
     if [ "$SPECIFIC_VERSION" = "latest" ]; then
       VERSION="latest"
-      local DESCRIPTION="deploy latest version"
+      local DESCRIPTION="${CUSTOM_DESCRIPTION:-deploy latest version}"
     else
       VERSION="$SPECIFIC_VERSION"
-      local DESCRIPTION="deploy v$VERSION"
+      local DESCRIPTION="${CUSTOM_DESCRIPTION:-deploy v$VERSION}"
     fi
   else
     # Modo sin versión: security (listar y seleccionar)
@@ -275,7 +286,7 @@ function deploy() {
     
     # Obtener la versión seleccionada
     VERSION="${VERSIONS[$SELECTED]}"
-    local DESCRIPTION="deploy -v$VERSION"
+    local DESCRIPTION="${CUSTOM_DESCRIPTION:-deploy v$VERSION}"
   fi
 
   if [ "$DRY_RUN" = true ]; then

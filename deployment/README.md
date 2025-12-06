@@ -20,6 +20,15 @@ Realiza deployment de servicios a múltiples entornos de forma secuencial.
 deploy <service>[@version] [OPTIONS]
 ```
 
+## Opciones
+
+| Opción | Descripción |
+| ------ | ----------- |
+| `--dry-run` | Modo simulación sin ejecutar deployments reales |
+| `--description "texto"` | Descripción personalizada para el deployment |
+| `-l, --list-services` | Lista todos los servicios disponibles |
+| `-h, --help` | Muestra la ayuda |
+
 ## Servicios Disponibles
 
 > **Nota:** Los servicios deben configurarse en `~/functions/.env` en la variable `DEPLOY_SERVICES`.  
@@ -79,6 +88,33 @@ deploy users@1.0.0
 deploy auth@0.52.1 --dry-run
 ```
 
+### Descripción Personalizada
+
+```zsh
+# Con descripción personalizada
+deploy auth@1.0.0 --description "Hotfix crítico - Issue #123"
+
+# Combinar con dry-run
+deploy users@2.0.0 --description "Release Q4" --dry-run
+```
+
+> **Nota:** Si no se especifica `--description`, se usa la descripción predeterminada: `deploy vX.Y.Z`
+
+## Autenticación
+
+Requiere tokens de autenticación:
+
+- **CSRF Token** - Token de seguridad del servidor
+- **Session ID** - ID de sesión del usuario
+
+**Cómo obtener tokens:**
+
+1. Ejecuta `qs-login`
+2. Inicia sesión con tus credenciales
+3. DevTools → Application → Cookies
+4. Copia `csrftoken` y `sessionid`
+5. Los tokens se solicitan al ejecutar el comando
+
 ## Manejo de Errores
 
 - **401/403** - Token expirado (aborta)
@@ -125,17 +161,23 @@ deploy --help
 # Listar servicios disponibles
 deploy --list-services
 
-# Deploy interactivo
-deploy api-auth
+# Deploy interactivo (selecciona versión de una lista)
+deploy auth
 
 # Deploy automático de última versión
-deploy api-auth@latest
+deploy auth@latest
 
 # Deploy de versión específica a todos los entornos
-deploy api-users@1.2.3
+deploy users@1.2.3
+
+# Deploy con descripción personalizada
+deploy auth@1.0.0 --description "Hotfix producción"
 
 # Simulación sin cambios reales
-deploy api-auth@latest --dry-run
+deploy auth@latest --dry-run
+
+# Combinando opciones
+deploy users@2.0.0 --description "Release Q4 2025" --dry-run
 ```
 
 ## Resumen de Deployment
@@ -156,11 +198,39 @@ Fallidos: 0
 
 ## Configuración
 
-El payload enviado:
+### Formato del Payload
+
+El payload enviado al servidor:
 
 ```json
 {
   "application": 100,
+  "service": <SERVICE_ID>,
+  "environment": <ENV_ID>,
+  "version": "<VERSION>",
+  "description": "<DESCRIPTION>",
+  "flyway_mode": "disabled",
+  "form_kind": "StepFunctions"
+}
+```
+
+### Descripciones
+
+- **Predeterminada**: `deploy vX.Y.Z` (e.g., `deploy v1.0.0`)
+- **Latest**: `deploy latest version`
+- **Personalizada**: El texto proporcionado con `--description`
+
+## Características
+
+- ✅ Soporte para múltiples servicios (configurables)
+- ✅ Deployment secuencial a múltiples entornos
+- ✅ Selector interactivo de versiones
+- ✅ Modo dry-run para pruebas
+- ✅ Descripciones personalizadas
+- ✅ Validación de servicios configurados
+- ✅ Manejo robusto de errores
+- ✅ Feedback visual con spinners
+- ✅ Resumen detallado al finalizar
   "service": <SERVICE_ID>,
   "environment": <ENV_ID>,
   "version": "<VERSION>",
