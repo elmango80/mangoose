@@ -117,9 +117,9 @@ if grep -q "zsh-functions" "$ZSHRC" 2>/dev/null; then
   else
     echo "${BLUE}Saltado${NC}"
     echo "${GREEN}✓ ¡Listo!${NC}"
-    echo "${BLUE}Recargando .zshrc...${NC}"
-    source "$ZSHRC"
-    echo "${GREEN}✓ Recargado${NC}"
+    echo ""
+    echo "${YELLOW}⚠️  Recuerda recargar tu shell:${NC}"
+    echo "   ${BLUE}source ~/.zshrc${NC}"
     exit 0
   fi
 fi
@@ -163,13 +163,13 @@ echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━
 echo "${GREEN}  ¡Instalación Completa!${NC}"
 echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo "${BLUE}Recargando .zshrc...${NC}"
-source "$ZSHRC"
-echo "${GREEN}✓ Recargado${NC}"
+echo "${YELLOW}⚠️  IMPORTANTE:${NC}"
+echo "   1. Edita el archivo .env con tus valores reales:"
+echo "      ${BLUE}${INSTALL_DIR}/.env${NC}"
 echo ""
-echo "Prueba algunos comandos:"
-echo "  ${BLUE}phoenix --help${NC}"
-echo "  ${BLUE}deploy --help${NC}"
+echo "   2. Recarga tu shell para aplicar los cambios:"
+echo "      ${BLUE}source ~/.zshrc${NC}"
+echo "      o abre una nueva terminal"
 echo ""
 echo "Instalado en: ${BLUE}${INSTALL_DIR}${NC}"
 echo ""
@@ -177,3 +177,7 @@ if [ -f "${ZSHRC}${BACKUP_SUFFIX}" ]; then
   echo "Respaldo: ${YELLOW}${ZSHRC}${BACKUP_SUFFIX}${NC}"
   echo ""
 fi
+echo "Prueba algunos comandos después de recargar:"
+echo "  ${BLUE}deploy --help${NC}"
+echo "  ${BLUE}cdw${NC}  # ir al directorio de trabajo"
+echo ""
