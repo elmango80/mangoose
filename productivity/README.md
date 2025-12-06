@@ -8,8 +8,6 @@ Funciones para mejorar la productividad en el desarrollo.
 
 Herramientas para gestión de proyectos y navegación.
 
-**Ver documentación completa:** [PRODUCTIVITY.md](../docs/PRODUCTIVITY.md)
-
 ## Funciones Principales
 
 ### seek_and_destroy (alias: sad)

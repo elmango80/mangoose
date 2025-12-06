@@ -8,8 +8,6 @@ Funciones para testing y mocking de APIs.
 
 Gestión de servidor WireMock para mocking de APIs.
 
-**Ver documentación completa:** [WIREMOCK.md](../docs/WIREMOCK.md)
-
 ## Función Principal
 
 ### wiremock_run_server (alias: run:wiremock)

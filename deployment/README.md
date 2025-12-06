@@ -8,8 +8,6 @@ Sistema de deployment automatizado.
 
 Sistema completo de deployment a múltiples entornos.
 
-**Ver documentación completa:** [DEPLOY.md](../docs/DEPLOY.md)
-
 ## Función Principal
 
 ### deploy

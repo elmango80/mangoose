@@ -8,8 +8,6 @@ Colección de más de 90 aliases para mejorar la productividad.
 
 Aliases organizados por categoría.
 
-**Ver documentación completa:** [ALIASES.md](../docs/ALIASES.md)
-
 ## Categorías de Aliases
 
 ### 📂 Navegación

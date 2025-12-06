@@ -4,8 +4,6 @@ Sistema de animaciones de carga con spinners.
 
 ## 🔄 turn_the_command
 
-> _"So turn the page..."_ 🎸
-
 Ejecuta un comando en segundo plano mientras muestra un spinner animado.
 
 ### Uso
