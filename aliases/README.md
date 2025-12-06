@@ -40,8 +40,8 @@ yre   yreg  yl    yu     yw    ywi   yx
 ```zsh
 gcls         # no_branch_for_old_refs
 gcls:all     # no_branch_for_old_refs --all
-gmup         # update_master_repo
-gmup:all     # update_master_repos
+gmup         # paranoid_sync
+gmup:all     # paranoid_sync --all
 gce          # git commit --allow-empty
 gmomn        # git merge origin/main --no-edit
 gmn          # git merge --no-edit

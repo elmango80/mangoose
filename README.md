@@ -235,8 +235,8 @@ turn_the_command --test         # Ver demo de spinners
 ### 🌲 Git
 
 - `no_branch_for_old_refs` - Limpiar ramas huérfanas en el repositorio
-- `update_master_repo` - Actualizar rama principal
-- `update_master_repos` - Actualizar múltiples repos
+- `paranoid_sync` - Actualizar rama principal
+- `paranoid_sync --all` - Actualizar múltiples repos
 
 ### 💬 UI/Output
 

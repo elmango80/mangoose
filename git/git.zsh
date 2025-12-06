@@ -195,62 +195,116 @@ function no_branch_for_old_refs() {
   fi
 }
 
-function update_master_repo() {
+function paranoid_sync() {
+  local all_repos=0
+  
+  # Procesar parámetros
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --all|-a)
+        all_repos=1
+        ;;
+      --help|-h)
+        msg "${GREEN}paranoid_sync${NC} - Actualiza la rama principal del repositorio"
+        msg --blank
+        msg "${BOLD}USO:${NC}"
+        msg "  paranoid_sync [OPCIONES]"
+        msg --blank
+        msg "${BOLD}OPCIONES:${NC}"
+        msg "  ${YELLOW}--all, -a${NC}    Ejecuta la sincronización en todos los repositorios del directorio actual"
+        msg "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda"
+        msg --blank
+        msg "${BOLD}DESCRIPCIÓN:${NC}"
+        msg "  Esta función actualiza la rama principal (main/master) del repositorio,"
+        msg "  preservando tu rama actual y cambios sin confirmar. Hará lo siguiente:"
+        msg "  • Detecta si hay cambios remotos en la rama principal"
+        msg "  • Guarda cambios sin confirmar (stash)"
+        msg "  • Cambia a la rama principal si no estás en ella"
+        msg "  • Obtiene y aplica los cambios remotos"
+        msg "  • Vuelve a tu rama original"
+        msg "  • Restaura los cambios sin confirmar"
+        msg --blank
+        msg "${BOLD}EJEMPLOS:${NC}"
+        msg "  paranoid_sync                  # Actualiza el repositorio actual"
+        msg "  paranoid_sync --all            # Actualiza todos los repositorios del directorio actual"
+        return 0
+        ;;
+      *)
+        msg "Argumento inesperado $1" --error --to-stderr
+        msg "Usa --help para información de uso" --info
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  # Si se especifica --all, ejecutar recursivamente en todos los repositorios
+  if [[ $all_repos -eq 1 ]]; then
+    msg "${CYAN}Actualizando repositorios...${NC}"
+    local processed_count=0
+    for d in */
+    do
+      cd "$d"
+      if is_git_repository 2>/dev/null
+      then
+        paranoid_sync
+        ((processed_count++))
+      fi
+      cd ..
+    done
+    
+    if [[ $processed_count -eq 0 ]]; then
+      msg "No se encontraron repositorios en el directorio actual" --warning
+    else
+      msg "🎉 Todos los repositorios actualizados" --success --no-icon
+    fi
+    return 0
+  fi
+
   local git_master_branch=$(git_main_branch)
   local repository_name=$(is_git_repository)
 
   if is_git_repository; then
     local repo_name=$(basename `git rev-parse --show-toplevel`)
-    printf "🚀 Iniciando actualización de master en ${GREEN}$repo_name${NC}\n"
+    msg "🚀 Iniciando actualización de master en ${GREEN}$repo_name${NC}"
 
     git fetch origin $git_master_branch > /dev/null 2>&1
     local has_remote_changes=$(git diff $git_master_branch origin/$git_master_branch --quiet || echo "changes")
     if [[ -n $has_remote_changes ]]
     then
       local current_branch=$(git branch --show-current)
-      printf "   Rama actual ${GREEN}$current_branch${NC}\n"
+      msg "   Rama actual ${GREEN}$current_branch${NC}"
 
       local has_uncommitted_changes=$(git status --porcelain)
       if [[ -n $has_uncommitted_changes ]]
       then
-        printf "  • ${YELLOW}Guardando cambios sin confirmar${NC}\n"
+        msg "  • ${YELLOW}Guardando cambios sin confirmar${NC}"
         git stash > /dev/null 2>&1
       fi
       
-      if [[ "$current_branch" != "master" && "$current_branch" != "main" ]]
+      if [[ "$current_branch" != $git_master_branch ]]
       then
-        printf "  • Cambiando a la rama ${GREEN}master${NC}\n"
+        msg "  • Cambiando a la rama ${GREEN}$git_master_branch${NC}"
         git switch $git_master_branch > /dev/null 2>&1
       fi
 
-      printf "  • Obteniendo cambios de la rama master remota\n"
+      msg "  • Obteniendo cambios de la rama remota"
       git pull origin $git_master_branch > /dev/null 2>&1
 
       if [[ "$current_branch" != $git_master_branch ]]
       then
-        printf "  • Cambiando a la rama ${GREEN}$current_branch${NC}\n"
+        msg "  • Cambiando a la rama ${GREEN}$current_branch${NC}"
         git switch "$current_branch" > /dev/null 2>&1
       fi
 
       if [[ -n $has_uncommitted_changes ]]
       then
-        printf "  • Restaurando cambios sin confirmar.\n"
+        msg "  • Restaurando cambios sin confirmar."
         git stash pop > /dev/null 2>&1
       fi
     fi
 
-    printf "  ✅ Rama master ya actualizada\n"
-    printf "\n"
+    msg "  ✅ Rama ${GREEN}$git_master_branch${NC} actualizada"
+    msg --blank
   fi
-}
-
-function update_master_repos() {
-  printf "🔄 ${CYAN}Actualizando repositorios...${NC}\n"
-  for d in */
-  do
-    cd "$d"
-    update_master_repo
-    cd ..
-  done
-  printf "🎉 Todos los repositorios actualizados\n"
 }

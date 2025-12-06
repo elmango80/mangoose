@@ -20,7 +20,7 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/spec/v2.0.0
 - **Funciones Git**
 
   - `no_branch_for_old_refs` - Limpia ramas obsoletas
-  - `update_master_repo` - Actualiza rama principal
+  - `paranoid_sync` - Actualiza rama principal
   - Operaciones por lotes para múltiples repositorios
 
 - **Herramientas de Productividad**

@@ -24,20 +24,20 @@ no_branch_for_old_refs --dry-run    # Vista previa
 no_branch_for_old_refs --demo       # Simulación con delay
 ```
 
-### update_master_repo (alias: gmup)
+### paranoid_sync (alias: gmup)
 
-Actualiza la rama principal (master/main) desde el remoto.
+Actualiza la rama principal (main/master) preservando tu rama actual y cambios sin confirmar.
 
 ```zsh
-update_master_repo            # Actualizar master/main
+paranoid_sync                 # Actualizar master/main
 ```
 
-### update_master_repos (alias: gmup:all)
+### paranoid_sync --all (alias: gmup:all)
 
-Ejecuta `update_master_repo` en múltiples repositorios.
+Ejecuta `paranoid_sync` en todos los repositorios del directorio actual.
 
 ```zsh
-update_master_repos           # Actualizar todos los repos
+paranoid_sync --all           # Actualizar todos los repos
 ```
 
 ### is_git_repository
@@ -71,8 +71,8 @@ Definidos en `aliases/aliases.zsh`:
 ```zsh
 gcls         # no_branch_for_old_refs
 gcls:all     # no_branch_for_old_refs --all
-gmup         # update_master_repo
-gmup:all     # update_master_repos
+gmup         # paranoid_sync
+gmup:all     # paranoid_sync --all
 gce          # git commit --allow-empty
 gmomn        # git merge origin/main --no-edit
 gmn          # git merge --no-edit
