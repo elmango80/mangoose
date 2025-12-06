@@ -1,9 +1,5 @@
 #!/bin/zsh
 
-# Configuración de directorios
-CODE_DIR="code"
-WORK_DIR="grupo-santander-ods"
-
 # Aliases de navegación
 alias cdh="cd $HOME"
 alias cdc="cd $HOME/$CODE_DIR"
@@ -41,12 +37,7 @@ alias yx="yarn dlx"
 # GRUPO_SANTANDER aliases
 alias eth0mtu="sudo ip link set dev eth0 mtu 1360"
 alias app="cd app"
-alias example="cd example"
 
-alias transfers:base="cdw && cd $TRANSFERS_BASE_DIR"
-alias transfers:example="cdw && cd $TRANSFERS_EXAMPLE_DIR"
-alias run:base="function_run_base_with_arguments"
-alias run:base:custom="function_run_base_with_arguments"
 alias run:dev="yarn dev:nodemon"
 alias run:start="yarn start"
 alias run:start:cc="yarn start:cc"
