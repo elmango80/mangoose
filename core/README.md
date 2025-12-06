@@ -1,109 +1,113 @@
 # Core Functions
 
-Funciones base y utilidades fundamentales que son usadas por otros módulos.
+Funciones base y utilidades del sistema.
 
-## Archivos
+## 📚 Documentación Completa
 
-### env-loader.zsh
+Cada módulo tiene su documentación detallada:
 
-Cargador de variables de entorno desde el archivo `.env`.
+- **[COLORS.md](COLORS.md)** - Sistema de colores (ANSI, 256, RGB)
+- **[PRINT.md](PRINT.md)** - Sistema de mensajes con formato e íconos
+- **[SPINNERS.md](SPINNERS.md)** - Animaciones de carga y spinners
+- **[UTILS.md](UTILS.md)** - Utilidades generales (selector, readline, etc.)
 
-**Características:**
+## 🎨 colors.zsh
 
-- Detecta automáticamente la ruta de instalación
-- Carga todas las variables desde `.env`
-- Muestra advertencias si el archivo `.env` no existe
-- Establece `ZSH_FUNCTIONS_ENV_LOADED` como indicador de estado
+Sistema completo de colores para la terminal.
 
-**Variables exportadas:**
+**Principales características:**
 
-- Variables de deployment (Quicksilver)
-- Variables de directorios (`CODE_DIR`, `WORK_DIR`)
-- Variables de Wiremock
-- Cualquier otra variable definida en `.env`
+- Colores ANSI básicos (16 colores)
+- Paleta de 256 colores
+- Soporte RGB (TrueColor)
+- Estilos de texto (bold, italic, dim, etc.)
+- Función `test_colors` para visualizar paletas
 
-**Ver documentación completa:** [configuration.md](../docs/configuration.md)
+📖 **[Ver documentación completa →](COLORS.md)**
 
-### colors.zsh
+## 💬 print.zsh
 
-Sistema completo de definiciones de colores ANSI, 256 colores y RGB True Color.
+Sistema de mensajes con formato, íconos y colores.
 
-**Ver documentación completa:** [COLORS.md](../docs/COLORS.md)
+**Principales características:**
 
-**Incluye:**
+- Función `msg` con múltiples tipos (success, error, warning, info)
+- Íconos automáticos según tipo de mensaje
+- Tabulación y formato
+- Redirección a stderr
+- Sin saltos de línea opcionales
 
-- Colores básicos ANSI
-- Colores brillantes/intensos
-- Bold colors
-- Estilos de texto (bold, italic, underline, etc.)
-- Colores extendidos (256)
-- RGB True Color
-- Función `test_colors` para visualización
+📖 **[Ver documentación completa →](PRINT.md)**
 
-### print.zsh
+## ⏳ spinners.zsh
 
-Sistema de mensajes con formato, colores e iconos.
+Animaciones de carga y feedback visual.
 
-**Ver documentación completa:** [PRINT.md](../docs/PRINT.md)
+**Principales características:**
 
-**Funciones principales:**
+- Función `run_with_spinner` para ejecutar comandos con animación
+- Múltiples estilos de spinners
+- Integración con sistema de mensajes
+- Manejo de errores visual
 
-- `msg` - Mensajes con colores e iconos
-- `print_indentation` - Manejo de indentación
-- `_output_message` - Salida a stdout/stderr
+📖 **[Ver documentación completa →](SPINNERS.md)**
 
-### utils.zsh
+## 🛠️ utils.zsh
 
-Funciones utilitarias de bajo nivel.
+Utilidades generales del sistema.
 
-**Ver documentación completa:** [UTILS.md](../docs/UTILS.md)
+**Principales características:**
 
-**Funciones principales:**
+- `select_option` - Selector interactivo de opciones
+- `read_single_char` - Lectura de un solo caracter
+- Funciones auxiliares de validación
 
-- `extract_arg_value` - Validación de argumentos
-- `read_single_char` - Leer un carácter sin Enter
-- `zre` - Recargar configuración Zsh
-- `select_option` - Selector interactivo con flechas
+📖 **[Ver documentación completa →](UTILS.md)**
 
-### spinners.zsh
+## 🔧 env-loader.zsh
 
-Sistema de animaciones y spinners para feedback visual.
+Cargador de variables de entorno desde `.env`.
 
-**Ver documentación completa:** [SPINNERS.md](../docs/SPINNERS.md)
+**Funcionalidad:**
 
-**Funciones principales:**
+- Carga automática de archivo `.env`
+- Validación de existencia
+- Mensajes de error si falta configuración
 
-- `run_with_spinner` - Ejecutar comandos con spinner animado
-- `test_spinner` - Demostración de spinners
+📖 **Ver:** [configuration.md](../docs/configuration.md) para detalles de configuración
 
-**Modelos disponibles:**
-dots, balloon, grow-vertical, grow-horizontal, star, hamburger, arc, circle
-
-## Dependencias
-
-Estos módulos son fundamentales y son usados por:
-
-- git/
-- productivity/
-- deployment/
-- testing/
-- aliases/
-
-## Orden de Carga
-
-Es importante cargar estos archivos en este orden:
-
-1. `colors.zsh` - Define variables de colores
-2. `utils.zsh` - Funciones utilitarias básicas
-3. `print.zsh` - Usa colors y utils
-4. `spinners.zsh` - Usa colors, utils y print
-
-## Uso
+## 📦 Uso
 
 ```zsh
-# Cargar todo el módulo core
+# Cargar todos los módulos core
 source ~/.config/zsh/functions/core/colors.zsh
-source ~/.config/zsh/functions/core/utils.zsh
 source ~/.config/zsh/functions/core/print.zsh
 source ~/.config/zsh/functions/core/spinners.zsh
+source ~/.config/zsh/functions/core/utils.zsh
+source ~/.config/zsh/functions/core/env-loader.zsh
+```
+
+## 🔗 Dependencias
+
+- **colors.zsh** - Base para todos los demás módulos
+- **print.zsh** - Requiere colors.zsh
+- **spinners.zsh** - Requiere colors.zsh y print.zsh
+- **utils.zsh** - Independiente
+- **env-loader.zsh** - Independiente
+
+## 🧪 Testing
+
+```zsh
+# Ver paleta de colores
+test_colors
+
+# Probar mensajes
+msg "Test message" --success
+msg "Error message" --error
+
+# Probar spinner
+run_with_spinner --command "sleep 2" --message "Procesando..."
+
+# Probar selector
+select_option "Opción 1" "Opción 2" "Opción 3"
 ```

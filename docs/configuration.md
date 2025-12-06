@@ -39,13 +39,25 @@ code .env
 
 ### Deployment
 
-| Variable                     | Descripción                                            | Ejemplo                                    |
-| ---------------------------- | ------------------------------------------------------ | ------------------------------------------ |
-| `DEPLOY_SERVER_URL`          | URL base del servidor de Quicksilver                   | `https://quicksilver-es.prod.ok-cloud.net` |
-| `DEPLOY_APP_ID`              | ID de la aplicación en Quicksilver                     | `138`                                      |
-| `DEPLOY_SERVICE_SECURITY_ID` | ID del servicio de seguridad                           | `2701`                                     |
-| `DEPLOY_SERVICE_LOGIN_ID`    | ID del servicio de login                               | `2700`                                     |
-| `DEPLOY_ENVIRONMENTS`        | Array de entornos de deployment (formato: `ID:NOMBRE`) | `("1858:DEVELOPMENT" "1891:QA")`           |
+| Variable              | Descripción                                            | Ejemplo                             |
+| --------------------- | ------------------------------------------------------ | ----------------------------------- |
+| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                    | `https://deploy-server.example.com` |
+| `DEPLOY_APP_ID`       | ID de la aplicación                                    | `100`                               |
+| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID`)  | `("auth:1001" "users:1002")`        |
+| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE`) | `("1001:DEVELOPMENT" "1003:QA")`    |
+
+**Nota sobre `DEPLOY_SERVICES`:**
+
+- Formato: Array de strings con formato `"NOMBRE:ID"`
+- Define todos los servicios que pueden ser desplegados
+- Ejemplo completo:
+  ```zsh
+  DEPLOY_SERVICES=(
+    "auth:1001"
+    "users:1002"
+    "data:1003"
+  )
+  ```
 
 **Nota sobre `DEPLOY_ENVIRONMENTS`:**
 
@@ -54,18 +66,18 @@ code .env
 - Ejemplo completo:
   ```zsh
   DEPLOY_ENVIRONMENTS=(
-    "1858:DEVELOPMENT"
-    "1906:DEVELOPMENT Contact Center"
-    "1891:QUALITY ASSURANCE"
+    "1001:DEVELOPMENT"
+    "1002:DEVELOPMENT Contact Center"
+    "1003:QUALITY ASSURANCE"
   )
   ```
 
 ### Variables de Directorios
 
-| Variable   | Descripción                                    | Ejemplo               |
-| ---------- | ---------------------------------------------- | --------------------- |
-| `CODE_DIR` | Directorio base de código (relativo a `$HOME`) | `code`                |
-| `WORK_DIR` | Directorio de trabajo (relativo a `$CODE_DIR`) | `grupo-santander-ods` |
+| Variable   | Descripción                                    | Ejemplo       |
+| ---------- | ---------------------------------------------- | ------------- |
+| `CODE_DIR` | Directorio base de código (relativo a `$HOME`) | `code`        |
+| `WORK_DIR` | Directorio de trabajo (relativo a `$CODE_DIR`) | `my-projects` |
 
 Estas variables se usan en los aliases de navegación (`cdc`, `cdw`).
 
@@ -91,8 +103,6 @@ echo "Servidor: $DEPLOY_SERVER_URL"
 
 - ✅ **`.env`** está en `.gitignore` y **NUNCA** se subirá al repositorio
 - ✅ **`.env.example`** contiene solo valores dummy/de ejemplo
-- ⚠️ **NUNCA** hagas commit de tu archivo `.env` real
-- ⚠️ **NUNCA** compartas tu archivo `.env` con otros
 
 ## 🔄 Actualización
 
