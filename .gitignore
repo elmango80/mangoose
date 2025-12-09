@@ -18,3 +18,5 @@
 
 # Temporary files
 *.tmp
+
+standalone/
