@@ -43,8 +43,8 @@ else
   
   if [ -d "$INSTALL_DIR/.git" ]; then
     echo "${YELLOW}⚠ Repositorio ya existe en:${NC} $INSTALL_DIR"
-    echo "¿Deseas actualizarlo? [S/n]: "
-    read update_repo
+    read -k 1 "update_repo?¿Deseas actualizarlo? [S/n]: "
+    echo ""
     if [[ ! "$update_repo" =~ ^[Nn]$ ]]; then
       echo "${BLUE}Actualizando repositorio...${NC}"
       cd "$INSTALL_DIR"
@@ -84,17 +84,19 @@ echo "${BLUE}Configurando .zshrc${NC}"
 # Verificar si ya está configurado
 if grep -q "mangoose" "$ZSHRC" 2>/dev/null; then
   echo "${YELLOW}⚠ .zshrc ya está configurado${NC}"
-  echo "¿Saltar? [S/n]: "
-  read skip_config
+  read -k 1 "skip_config?Omitir configuración? [S/n]: "
+  echo ""
   if [[ "$skip_config" =~ ^[Nn]$ ]]; then
     echo "${YELLOW}Respaldando .zshrc...${NC}"
     cp "$ZSHRC" "${ZSHRC}${BACKUP_SUFFIX}"
   else
-    echo "${BLUE}Saltado${NC}"
-    echo "${GREEN}✓ ¡Listo!${NC}"
     echo ""
-    echo "${YELLOW}⚠️  Recuerda recargar tu shell:${NC}"
-    echo "   ${BLUE}source ~/.zshrc${NC}"
+    echo "${YELLOW}⚠️  IMPORTANTE:${NC}"
+    echo ""
+    echo "  - Recarga tu shell para aplicar los cambios o abre una nueva terminal"
+    echo "    ${BLUE}source ~/.zshrc${NC}"
+    echo ""
+    echo "  ${GREEN}¡Instalación Completa!${NC}"
     exit 0
   fi
 fi
@@ -107,9 +109,7 @@ if [ -f "$ZSHRC" ] && [ ! -f "${ZSHRC}${BACKUP_SUFFIX}" ]; then
 fi
 
 # Agregar configuración
-echo ""
 echo "${BLUE}Agregando a .zshrc...${NC}"
-
 cat >> "$ZSHRC" << EOF
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -132,27 +132,21 @@ source ${INSTALL_DIR}/aliases/aliases.zsh
 EOF
 
 echo "${GREEN}✓ Configurado${NC}"
-
-echo ""
-echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo "${GREEN}  ¡Instalación Completa!${NC}"
-echo "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo "${YELLOW}⚠️  IMPORTANTE:${NC}"
-echo "   1. Edita el archivo .env con tus valores reales:"
-echo "      ${BLUE}${INSTALL_DIR}/.env${NC}"
-echo ""
-echo "   2. Recarga tu shell para aplicar los cambios:"
-echo "      ${BLUE}source ~/.zshrc${NC}"
-echo "      o abre una nueva terminal"
 echo ""
 echo "Instalado en: ${BLUE}${INSTALL_DIR}${NC}"
-echo ""
 if [ -f "${ZSHRC}${BACKUP_SUFFIX}" ]; then
   echo "Respaldo: ${YELLOW}${ZSHRC}${BACKUP_SUFFIX}${NC}"
-  echo ""
 fi
+echo ""
+echo "${YELLOW}⚠️  IMPORTANTE:${NC}"
+echo ""
+echo "  - Edita el archivo ${BLUE}${INSTALL_DIR}/.env${NC} con tus valores reales"
+echo ""
+echo "  - Recarga tu shell para aplicar los cambios o abre una nueva terminal"
+echo "    ${BLUE}source ~/.zshrc${NC}"
+echo ""
 echo "Prueba algunos comandos después de recargar:"
 echo "  ${BLUE}deploy --help${NC}"
-echo "  ${BLUE}cdw${NC}  # ir al directorio de trabajo"
+echo "  ${BLUE}cdw${NC} # ir al directorio de trabajo"
 echo ""
+echo "${GREEN}¡Instalación Completa!${NC}"
