@@ -13,14 +13,13 @@ NC='\033[0m' # Sin Color
 # Obtener el directorio donde se encuentra este script
 SCRIPT_DIR="$(cd "$(dirname "${(%):-%x}")" && pwd)"
 
-# Directorio de instalación por defecto
-DEFAULT_INSTALL_DIR="${HOME}/.config/zsh/functions"
 ZSHRC="${HOME}/.zshrc"
-BACKUP_SUFFIX=".zsh-functions-backup-$(date +%Y%m%d-%H%M%S)"
+BACKUP_SUFFIX=".mangoose-backup-$(date +%Y%m%d-%H%M%S)"
+CLONE_DIR="${HOME}/.config/zsh/mangoose"
 
-echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo "${BLUE}  Instalador de Zsh Functions Collection${NC}"
-echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "${BLUE}  Instalador de Mangoose${NC}"
+echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
 # Verificar si zsh está disponible
@@ -33,55 +32,35 @@ fi
 echo "${GREEN}✓${NC} Zsh encontrado: $(zsh --version)"
 
 # Determinar el directorio de instalación
-if [ -d "$SCRIPT_DIR/.git" ]; then
-  # Ejecutándose desde el repositorio clonado
+if [ -d "$SCRIPT_DIR/core" ] && [ -d "$SCRIPT_DIR/git" ]; then
+  # Ejecutándose desde el repositorio clonado localmente
   INSTALL_DIR="$SCRIPT_DIR"
-  echo "${BLUE}Ejecutando desde repositorio:${NC} $INSTALL_DIR"
+  echo "${BLUE}Usando repositorio local:${NC} $INSTALL_DIR"
 else
-  # Ejecutándose desde curl/wget (script descargado)
-  INSTALL_DIR="$DEFAULT_INSTALL_DIR"
+  # Script ejecutado remotamente (curl | zsh)
+  # Necesitamos clonar el repositorio primero
   
-  # Verificar si ya está instalado
-  if [ -d "$INSTALL_DIR/.git" ]; then
-    echo "${YELLOW}⚠ Ya instalado en:${NC} $INSTALL_DIR"
-    echo "Opciones:"
-    echo "  1. Actualizar (git pull)"
-    echo "  2. Reinstalar (respaldar y clonar de nuevo)"
-    echo "  3. Cancelar"
-    echo ""
-    read "choice?Elige [1-3]: "
-    
-    case $choice in
-      1)
-        echo "${BLUE}Actualizando...${NC}"
-        cd "$INSTALL_DIR"
-        git pull
-        echo "${GREEN}✓ Actualizado${NC}"
-        ;;
-      2)
-        echo "${YELLOW}Respaldando...${NC}"
-        mv "$INSTALL_DIR" "${INSTALL_DIR}${BACKUP_SUFFIX}"
-        echo "${BLUE}Clonando...${NC}"
-        git clone https://github.com/elmango80/zsh-functions.git "$INSTALL_DIR"
-        echo "${GREEN}✓ Reinstalado${NC}"
-        ;;
-      3)
-        echo "Cancelado"
-        exit 0
-        ;;
-      *)
-        echo "${RED}Opción inválida${NC}"
-        exit 1
-        ;;
-    esac
+  if [ -d "$CLONE_DIR/.git" ]; then
+    echo "${YELLOW}⚠ Repositorio ya existe en:${NC} $CLONE_DIR"
+    echo "¿Deseas actualizarlo? [S/n]: "
+    read update_repo
+    if [[ ! "$update_repo" =~ ^[Nn]$ ]]; then
+      echo "${BLUE}Actualizando repositorio...${NC}"
+      cd "$CLONE_DIR"
+      git pull
+      echo "${GREEN}✓ Actualizado${NC}"
+    fi
   else
-    # Instalación nueva
-    echo "${BLUE}Instalando en:${NC} $INSTALL_DIR"
-    mkdir -p "$(dirname "$INSTALL_DIR")"
-    echo "${BLUE}Clonando repositorio...${NC}"
-    git clone https://github.com/elmango80/zsh-functions.git "$INSTALL_DIR"
-    echo "${GREEN}✓ Clonado${NC}"
+    echo "${BLUE}Clonando repositorio en:${NC} $CLONE_DIR"
+    mkdir -p "$(dirname "$CLONE_DIR")"
+    git clone https://github.com/elmango80/mangoose.git "$CLONE_DIR"
+    echo "${GREEN}✓ Repositorio clonado${NC}"
   fi
+  
+  # Ahora ejecutar el script de instalación desde el repositorio clonado
+  echo ""
+  echo "${BLUE}Ejecutando instalación desde el repositorio...${NC}"
+  exec "$CLONE_DIR/install.sh"
 fi
 
 echo "${BLUE}Configurando archivo de entorno (.env)${NC}"
@@ -107,7 +86,7 @@ echo ""
 echo "${BLUE}Configurando .zshrc${NC}"
 
 # Verificar si ya está configurado
-if grep -q "zsh-functions" "$ZSHRC" 2>/dev/null; then
+if grep -q "mangoose" "$ZSHRC" 2>/dev/null; then
   echo "${YELLOW}⚠ .zshrc ya está configurado${NC}"
   echo "¿Saltar? [S/n]: "
   read skip_config
@@ -139,7 +118,7 @@ cat >> "$ZSHRC" << EOF
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Zsh Functions Collection
-# https://github.com/elmango80/zsh-functions
+# https://github.com/elmango80/mangoose
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 # Cargar en orden de dependencias
