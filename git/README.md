@@ -50,9 +50,12 @@ Requiere:
 
 ## Uso
 
+Este módulo se carga automáticamente si instalaste con el script de instalación.
+
+Para uso manual:
+
 ```zsh
-# Cargar módulo Git
-source ~/.config/zsh/functions/git/git.zsh
+source ~/mangoose/git/git.zsh
 ```
 
 ## Aliases Relacionados

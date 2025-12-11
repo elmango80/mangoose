@@ -78,13 +78,17 @@ Cargador de variables de entorno desde `.env`.
 
 ## 📦 Uso
 
+Los módulos core se cargan automáticamente si instalaste con el script de instalación.
+
+Para uso manual:
+
 ```zsh
-# Cargar todos los módulos core
-source ~/.config/zsh/functions/core/colors.zsh
-source ~/.config/zsh/functions/core/print.zsh
-source ~/.config/zsh/functions/core/spinners.zsh
-source ~/.config/zsh/functions/core/utils.zsh
-source ~/.config/zsh/functions/core/env-loader.zsh
+# Cargar todos los módulos core (reemplaza /ruta/a/mangoose con tu ubicación)
+source ~/mangoose/core/colors.zsh
+source ~/mangoose/core/print.zsh
+source ~/mangoose/core/spinners.zsh
+source ~/mangoose/core/utils.zsh
+source ~/mangoose/core/env-loader.zsh
 ```
 
 ## 🔗 Dependencias

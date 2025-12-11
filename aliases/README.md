@@ -110,18 +110,18 @@ Algunos aliases requieren:
 
 ## Uso
 
+Para uso manual:
+
 ```zsh
-# Cargar módulo Aliases
-source ~/.config/zsh/functions/aliases/aliases.zsh
+source ~/mangoose/aliases/aliases.zsh
 ```
 
 ## Personalización
 
-Puedes sobrescribir aliases en tu `.zshrc`:
+Puedes sobrescribir aliases en tu `.zshrc` después de cargar mangoose:
 
 ```zsh
-# Cargar aliases del proyecto
-source ~/.config/zsh/functions/aliases/aliases.zsh
+# Los aliases de mangoose ya están cargados por el instalador
 
 # Sobrescribir o agregar tus propios aliases
 alias cdw="cd ~/my-custom-path"

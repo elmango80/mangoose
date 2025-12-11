@@ -124,9 +124,12 @@ Requiere:
 
 ## Uso
 
+Este módulo se carga automáticamente si instalaste con el script de instalación.
+
+Para uso manual:
+
 ```zsh
-# Cargar módulo Testing
-source ~/.config/zsh/functions/testing/wiremock.zsh
+source ~/mangoose/testing/wiremock.zsh
 ```
 
 ## Alias Relacionado

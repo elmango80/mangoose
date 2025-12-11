@@ -82,9 +82,12 @@ Herramientas externas:
 
 ## Uso
 
+Este módulo se carga automáticamente si instalaste con el script de instalación.
+
+Para uso manual:
+
 ```zsh
-# Cargar módulo Productivity
-source ~/.config/zsh/functions/productivity/productivity.zsh
+source ~/mangoose/productivity/productivity.zsh
 ```
 
 ## Casos de Uso

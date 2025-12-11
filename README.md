@@ -73,14 +73,23 @@ Cada módulo tiene su propia documentación detallada:
 curl -fsSL https://raw.githubusercontent.com/elmango80/mangoose/master/install.sh | zsh
 ```
 
+El instalador automáticamente:
+
+- ✅ Clona el repositorio en `~/.config/zsh/mangoose`
+- ✅ Crea el archivo `.env` desde `.env.example`
+- ✅ Hace backup de tu `.zshrc`
+- ✅ Agrega la configuración necesaria a `.zshrc`
+- ✅ Respeta configuraciones existentes
+- ✅ Permite actualizar si ya está instalado
+
 ### ⚙️ Configuración Post-Instalación
 
 Después de instalar, **edita el archivo `.env` con tus valores reales**:
 
 ```zsh
-nano ~/functions/.env
+nano ~/.config/zsh/mangoose/.env
 # o con tu editor preferido
-code ~/functions/.env
+code ~/.config/zsh/mangoose/.env
 ```
 
 #### 🔧 Variables Disponibles
@@ -163,50 +172,48 @@ source ~/.zshrc
 # o simplemente abre una nueva terminal
 ```
 
-O descarga primero y luego ejecuta:
-
-```zsh
-curl -fsSL https://raw.githubusercontent.com/elmango80/mangoose/master/install.sh -o /tmp/install-mangoose.sh
-chmod +x /tmp/install-mangoose.sh
-/tmp/install-mangoose.sh
-```
-
-El instalador:
-
-- ✅ Clona el repositorio en `~/.config/zsh/functions`
-- ✅ Crea el archivo `.env` desde `.env.example`
-- ✅ Hace backup de tu `.zshrc`
-- ✅ Agrega la configuración necesaria
-- ✅ Respeta configuraciones existentes
-- ✅ Permite actualizar o reinstalar
-
 **⚠️ Importante:** Después de la instalación, debes editar el `.env` con tus valores reales antes de usar comandos como `deploy`.
 
 ### Instalación Manual
 
+Si prefieres clonar el repositorio en una ubicación específica:
+
+```zsh
+# Clonar el repositorio en la ubicación que prefieras
+git clone https://github.com/elmango80/mangoose.git /tu/ruta/preferida/mangoose
+
+# Ejecutar el script de instalación desde ese directorio
+cd /tu/ruta/preferida/mangoose
+./install.sh
+```
+
+El script detectará automáticamente que está en un repositorio clonado y usará esa ubicación.
+
+**O completamente manual:**
+
 ```zsh
 # Clonar el repositorio
-git clone https://github.com/elmango80/mangoose.git ~/.config/zsh/functions
+git clone https://github.com/elmango80/mangoose.git ~/mi-ubicacion/mangoose
 
 # Crear archivo de configuración desde el ejemplo
-cp ~/.config/zsh/functions/.env.example ~/.config/zsh/functions/.env
+cp ~/mi-ubicacion/mangoose/.env.example ~/mi-ubicacion/mangoose/.env
 
 # Editar con tus valores reales
-nano ~/.config/zsh/functions/.env
+nano ~/mi-ubicacion/mangoose/.env
 
-# Agregar a tu .zshrc (carga en orden correcto)
+# Agregar a tu .zshrc (reemplaza ~/mi-ubicacion/mangoose con tu ruta)
 cat >> ~/.zshrc << 'EOF'
-# Cargar Zsh Functions (orden de dependencias)
-source ~/.config/zsh/functions/core/env-loader.zsh
-source ~/.config/zsh/functions/core/colors.zsh
-source ~/.config/zsh/functions/core/utils.zsh
-source ~/.config/zsh/functions/core/print.zsh
-source ~/.config/zsh/functions/core/spinners.zsh
-source ~/.config/zsh/functions/git/git.zsh
-source ~/.config/zsh/functions/productivity/productivity.zsh
-source ~/.config/zsh/functions/deployment/deploy.zsh
-source ~/.config/zsh/functions/testing/wiremock.zsh
-source ~/.config/zsh/functions/aliases/aliases.zsh
+# Cargar Mangoose (orden de dependencias)
+source ~/mangoose/core/env-loader.zsh
+source ~/mangoose/core/colors.zsh
+source ~/mangoose/core/utils.zsh
+source ~/mangoose/core/print.zsh
+source ~/mangoose/core/spinners.zsh
+source ~/mangoose/git/git.zsh
+source ~/mangoose/productivity/productivity.zsh
+source ~/mangoose/deployment/deploy.zsh
+source ~/mangoose/testing/wiremock.zsh
+source ~/mangoose/aliases/aliases.zsh
 EOF
 
 # Recargar la configuración
@@ -228,8 +235,17 @@ Es crucial cargar en este orden debido a dependencias:
 
 ### Actualizar
 
+Si instalaste con el script automático:
+
 ```zsh
-cd ~/.config/zsh/functions
+# Volver a ejecutar el instalador, te dará opción de actualizar
+curl -fsSL https://raw.githubusercontent.com/elmango80/mangoose/master/install.sh | zsh
+```
+
+O manualmente:
+
+```zsh
+cd ~/.config/zsh/mangoose  # o la ruta donde lo clonaste
 git pull
 source ~/.zshrc
 ```

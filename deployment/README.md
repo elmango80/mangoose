@@ -29,7 +29,7 @@ deploy <service>[@version] [OPTIONS]
 
 ## Servicios Disponibles
 
-> **Nota:** Los servicios deben configurarse en `~/functions/.env` en la variable `DEPLOY_SERVICES`.  
+> **Nota:** Los servicios deben configurarse en tu archivo `.env` en la variable `DEPLOY_SERVICES`.  
 > Los servicios listados a continuación son ejemplos ficticios a modo informativo.
 
 | Servicio | Descripción               |
@@ -46,7 +46,7 @@ deploy --list-services
 
 ## Entornos de Despliegue
 
-> **Nota:** Los entornos deben configurarse en `~/functions/.env` en la variable `DEPLOY_ENVIRONMENTS`.  
+> **Nota:** Los entornos deben configurarse en tu archivo `.env` en la variable `DEPLOY_ENVIRONMENTS`.  
 > Los entornos listados a continuación son ejemplos ficticios a modo informativo.
 
 Los deployments se ejecutan en este orden:
@@ -130,7 +130,7 @@ Requiere tokens de autenticación:
 
 ### Variables de Entorno
 
-Deben configurarse en `~/functions/.env`:
+Deben configurarse en tu archivo `.env`:
 
 - `DEPLOY_SERVER_URL` - URL del servidor de deployment
 - `DEPLOY_APP_ID` - ID de la aplicación
@@ -139,9 +139,12 @@ Deben configurarse en `~/functions/.env`:
 
 ## Uso
 
+Este módulo se carga automáticamente si instalaste con el script de instalación.
+
+Para uso manual:
+
 ```zsh
-# Cargar módulo Deployment
-source ~/functions/deployment/deploy.zsh
+source ~/mangoose/deployment/deploy.zsh
 ```
 
 ## Alias Relacionado
