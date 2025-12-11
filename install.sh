@@ -17,9 +17,9 @@ ZSHRC="${HOME}/.zshrc"
 BACKUP_SUFFIX=".mangoose-backup-$(date +%Y%m%d-%H%M%S)"
 CLONE_DIR="${HOME}/.config/zsh/mangoose"
 
-echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo "${BLUE}  Instalador de Mangoose${NC}"
-echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "${BLUE}  Instalador de Mangoose - Colección de funciones para ZSH${NC}"
+echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
 # Verificar si zsh está disponible
@@ -38,29 +38,25 @@ if [ -d "$SCRIPT_DIR/core" ] && [ -d "$SCRIPT_DIR/git" ]; then
   echo "${BLUE}Usando repositorio local:${NC} $INSTALL_DIR"
 else
   # Script ejecutado remotamente (curl | zsh)
-  # Necesitamos clonar el repositorio primero
+  # Clonar el repositorio en CLONE_DIR y usar ese como INSTALL_DIR
+  INSTALL_DIR="$CLONE_DIR"
   
-  if [ -d "$CLONE_DIR/.git" ]; then
-    echo "${YELLOW}⚠ Repositorio ya existe en:${NC} $CLONE_DIR"
+  if [ -d "$INSTALL_DIR/.git" ]; then
+    echo "${YELLOW}⚠ Repositorio ya existe en:${NC} $INSTALL_DIR"
     echo "¿Deseas actualizarlo? [S/n]: "
     read update_repo
     if [[ ! "$update_repo" =~ ^[Nn]$ ]]; then
       echo "${BLUE}Actualizando repositorio...${NC}"
-      cd "$CLONE_DIR"
-      git pull
+      cd "$INSTALL_DIR"
+      git pull 2>&1 | grep -v "^remote:" | grep -v "^Receiving" | grep -v "^Resolving"
       echo "${GREEN}✓ Actualizado${NC}"
     fi
   else
-    echo "${BLUE}Clonando repositorio en:${NC} $CLONE_DIR"
-    mkdir -p "$(dirname "$CLONE_DIR")"
-    git clone https://github.com/elmango80/mangoose.git "$CLONE_DIR"
+    echo "${BLUE}Clonando repositorio en:${NC} $INSTALL_DIR"
+    mkdir -p "$(dirname "$INSTALL_DIR")"
+    git clone https://github.com/elmango80/mangoose.git "$INSTALL_DIR" 2>&1 | grep -v "^remote:" | grep -v "^Receiving" | grep -v "^Resolving"
     echo "${GREEN}✓ Repositorio clonado${NC}"
   fi
-  
-  # Ahora ejecutar el script de instalación desde el repositorio clonado
-  echo ""
-  echo "${BLUE}Ejecutando instalación desde el repositorio...${NC}"
-  exec "$CLONE_DIR/install.sh"
 fi
 
 echo "${BLUE}Configurando archivo de entorno (.env)${NC}"
