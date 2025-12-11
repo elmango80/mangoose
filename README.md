@@ -17,7 +17,7 @@ Colección completa de funciones y utilidades para Zsh organizadas por módulos 
 ## 📁 Estructura del Proyecto
 
 ```
-zsh-functions/
+mangoose/
 ├── core/           # Funciones base y configuración
 │   ├── env-loader.zsh  # Cargador de variables de entorno
 │   ├── colors.zsh
@@ -70,7 +70,7 @@ Cada módulo tiene su propia documentación detallada:
 
 ```zsh
 # Descargar e instalar con un comando
-curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh | zsh
+curl -fsSL https://raw.githubusercontent.com/elmango80/mangoose/master/install.sh | zsh
 ```
 
 ### ⚙️ Configuración Post-Instalación
@@ -166,9 +166,9 @@ source ~/.zshrc
 O descarga primero y luego ejecuta:
 
 ```zsh
-curl -fsSL https://raw.githubusercontent.com/elmango80/zsh-functions/master/install.sh -o /tmp/install-zsh-functions.sh
-chmod +x /tmp/install-zsh-functions.sh
-/tmp/install-zsh-functions.sh
+curl -fsSL https://raw.githubusercontent.com/elmango80/mangoose/master/install.sh -o /tmp/install-mangoose.sh
+chmod +x /tmp/install-mangoose.sh
+/tmp/install-mangoose.sh
 ```
 
 El instalador:
@@ -186,7 +186,7 @@ El instalador:
 
 ```zsh
 # Clonar el repositorio
-git clone https://github.com/elmango80/zsh-functions.git ~/.config/zsh/functions
+git clone https://github.com/elmango80/mangoose.git ~/.config/zsh/functions
 
 # Crear archivo de configuración desde el ejemplo
 cp ~/.config/zsh/functions/.env.example ~/.config/zsh/functions/.env
