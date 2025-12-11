@@ -1,4 +1,4 @@
-# Zsh Functions Collection
+# Mangoose
 
 Colección completa de funciones y utilidades para Zsh organizadas por módulos que mejoran significativamente la productividad en desarrollo, automatización de deployments, gestión de repositorios Git y mucho más.
 
