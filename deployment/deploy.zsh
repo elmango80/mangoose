@@ -54,7 +54,7 @@ function deploy() {
     msg "  6. STAGING Contact Center"
     msg --blank
     msg "Ejemplos:"
-    msg "  deploy security                                            # Lista versiones y selecciona interactivamente"
+    msg "  deploy security                                            # Lista versiones y selecciona dinámicamente"
     msg "  deploy security@latest                                     # Despliega última versión disponible"
     msg "  deploy security@0.52.1                                     # Despliega versión específica"
     msg "  deploy login@0.52.1 --dry-run                              # Simula deployment sin ejecutar"
@@ -198,7 +198,7 @@ function deploy() {
     return 1
   fi
   
-  # Parsear flags adicionales
+  # Parser flags adicionales
   while [[ $# -gt 0 ]]; do
     case $1 in
       --dry-run)
