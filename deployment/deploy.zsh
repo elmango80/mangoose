@@ -46,12 +46,24 @@ function deploy() {
     fi
     msg --blank
     msg "Entornos de despliegue:"
-    msg "  1. DEVELOPMENT"
-    msg "  2. DEVELOPMENT Contact Center"
-    msg "  3. QUALITY ASSURANCE"
-    msg "  4. QUALITY ASSURANCE Contact Center"
-    msg "  5. STAGING"
-    msg "  6. STAGING Contact Center"
+    if [[ -n "${DEPLOY_APPS}" ]] && [[ ${#DEPLOY_APPS[@]} -gt 0 ]]; then
+      for app_entry in "${DEPLOY_APPS[@]}"; do
+        local app_n="${app_entry%%:*}"
+        local app_i="${app_entry#*:}"
+        msg "  [$app_n (ID: $app_i)]"
+        local env_idx=1
+        for env_entry in "${DEPLOY_ENVIRONMENTS[@]}"; do
+          local env_id="${env_entry%%:*}"
+          local env_rest="${env_entry#*:}"
+          local env_name="${env_rest%:*}"
+          local env_app="${env_rest##*:}"
+          if [[ "$env_app" == "$app_n" ]]; then
+            msg "    ${env_idx}. ${env_name}"
+            ((env_idx++))
+          fi
+        done
+      done
+    fi
     msg --blank
     msg "Ejemplos:"
     msg "  deploy security                                            # Lista versiones y selecciona dinámicamente"
@@ -317,16 +329,26 @@ function deploy() {
     return 1
   fi
 
-  # Construir arrays desde DEPLOY_ENVIRONMENTS
+  # Construir arrays desde DEPLOY_ENVIRONMENTS filtrando por APP_NAME
   declare -A ENVIRONMENTS
   local -a DEPLOYMENT_ORDER
   
   for env_entry in "${DEPLOY_ENVIRONMENTS[@]}"; do
     local env_id="${env_entry%%:*}"
-    local env_name="${env_entry#*:}"
-    ENVIRONMENTS[$env_id]="$env_name"
-    DEPLOYMENT_ORDER+=("$env_id")
+    local env_rest="${env_entry#*:}"
+    local env_name="${env_rest%:*}"
+    local env_app="${env_rest##*:}"
+    if [[ "$env_app" == "$APP_NAME" ]]; then
+      ENVIRONMENTS[$env_id]="$env_name"
+      DEPLOYMENT_ORDER+=("$env_id")
+    fi
   done
+  
+  if [[ ${#DEPLOYMENT_ORDER[@]} -eq 0 ]]; then
+    msg "Error: No hay entornos configurados para la aplicación '$APP_NAME'" --error
+    msg "Configura los entornos en el archivo .env con formato: \"ID:NOMBRE:$APP_NAME\"" --dim
+    return 1
+  fi
   
   # Determinar el modo de operación según si se especificó versión
   if [ -n "$SPECIFIC_VERSION" ]; then
@@ -342,11 +364,16 @@ function deploy() {
     # Modo sin versión: security (listar y seleccionar)
     # Obtener versiones disponibles (usando el primer entorno como referencia)
     local FIRST_ENV="${DEPLOYMENT_ORDER[1]}"
-    local VERSIONS_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "${DEPLOY_SERVER_URL}/cd/api/versions/$SERVICE_ID/$FIRST_ENV" \
-      -H 'accept: application/json, text/plain, */*' \
-      -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
-      -H 'priority: u=1, i' \
-      -b "csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID")
+    local versions_tmp=$(mktemp)
+    turn_the_command \
+      --message "Obteniendo versiones disponibles" \
+      --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/versions/$SERVICE_ID/$FIRST_ENV' \
+        -H 'accept: application/json, text/plain, */*' \
+        -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
+        -H 'priority: u=1, i' \
+        -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' > $versions_tmp" > /dev/null
+    local VERSIONS_RESPONSE=$(cat "$versions_tmp")
+    rm -f "$versions_tmp"
 
     # Extraer el código HTTP
     local VERSIONS_HTTP_STATUS=$(echo "$VERSIONS_RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)

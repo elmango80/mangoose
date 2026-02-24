@@ -142,7 +142,7 @@ Deben configurarse en tu archivo `.env`:
 - `DEPLOY_SERVER_URL` - URL del servidor de deployment
 - `DEPLOY_APPS` - Array de aplicaciones (formato: `"nombre_app:id_app"`)
 - `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id:nombre_app"`)
-- `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre"`)
+- `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre:nombre_app"`)
 - `DEPLOY_CSRF_TOKEN` - Token CSRF (se actualiza automáticamente)
 - `DEPLOY_SESSION_ID` - ID de sesión (se actualiza automáticamente)
 

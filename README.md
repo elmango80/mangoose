@@ -96,12 +96,12 @@ code ~/.config/zsh/mangoose/.env
 
 ##### Deployment
 
-| Variable              | Descripción                                                      | Ejemplo                                    |
-| --------------------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                              | `https://deploy-server.example.com`        |
-| `DEPLOY_APPS`         | Array de aplicaciones (formato: `NOMBRE_APP:ID_APP`)             | `("ods-pri:138" "ods-api:140")`            |
-| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID:NOMBRE_APP`) | `("auth:1001:ods-pri" "api:2001:ods-api")` |
-| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE`)           | `("1001:DEVELOPMENT" "1003:QA")`           |
+| Variable              | Descripción                                                       | Ejemplo                                    |
+| --------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
+| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                               | `https://deploy-server.example.com`        |
+| `DEPLOY_APPS`         | Array de aplicaciones (formato: `NOMBRE_APP:ID_APP`)              | `("ods-pri:138" "ods-api:140")`            |
+| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID:NOMBRE_APP`)  | `("auth:1001:ods-pri" "api:2001:ods-api")` |
+| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE:NOMBRE_APP`) | `("1001:DEV:ods-pri" "2001:DEV:ods-api")`  |
 
 **Formato de `DEPLOY_APPS`:**
 
@@ -126,9 +126,10 @@ DEPLOY_SERVICES=(
 
 ```zsh
 DEPLOY_ENVIRONMENTS=(
-  "1001:DEVELOPMENT"
-  "1002:DEVELOPMENT Contact Center"
-  "1003:QUALITY ASSURANCE"
+  "1001:DEVELOPMENT:ods-pri"
+  "1002:DEVELOPMENT Contact Center:ods-pri"
+  "2001:DEVELOPMENT:ods-api"
+  "2002:DEVELOPMENT Contact Center:ods-api"
 )
 ```
 
@@ -166,8 +167,9 @@ export DEPLOY_SERVICES=(
 )
 
 export DEPLOY_ENVIRONMENTS=(
-  "1001:DEVELOPMENT"
-  "1003:QA"
+  "1001:DEVELOPMENT:ods-pri"
+  "1003:QA:ods-pri"
+  "2001:DEVELOPMENT:ods-api"
 )
 ```
 
