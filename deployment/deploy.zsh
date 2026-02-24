@@ -242,11 +242,13 @@ function deploy() {
   validate_deploy_tokens() {
     local token="$1"
     local session="$2"
-    local http_status=$(curl -s -o /dev/null -w "%{http_code}" \
-      "${DEPLOY_SERVER_URL}/cd/react-api/check-auth-status/" \
-      -H 'accept: application/json, text/plain, */*' \
-      -b "csrftoken=$token; sessionid=$session")
-    [[ "$http_status" == "200" ]]
+    local tmp_file=$(mktemp)
+    turn_the_command \
+      --message "Verificando credenciales" \
+      --command "curl -s -o /dev/null -w '%{http_code}' '${DEPLOY_SERVER_URL}/cd/react-api/check-auth-status/' -H 'accept: application/json, text/plain, */*' -b 'csrftoken=$token; sessionid=$session' > $tmp_file" > /dev/null
+    local result=$(cat "$tmp_file")
+    rm -f "$tmp_file"
+    [[ "$result" == "200" ]]
   }
 
   # Función interna para actualizar un token en el archivo .env
