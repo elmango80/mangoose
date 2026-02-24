@@ -242,11 +242,11 @@ function deploy() {
   validate_deploy_tokens() {
     local token="$1"
     local session="$2"
-    local status=$(curl -s -o /dev/null -w "%{http_code}" \
+    local http_status=$(curl -s -o /dev/null -w "%{http_code}" \
       "${DEPLOY_SERVER_URL}/cd/react-api/check-auth-status/" \
       -H 'accept: application/json, text/plain, */*' \
       -b "csrftoken=$token; sessionid=$session")
-    [[ "$status" == "200" ]]
+    [[ "$http_status" == "200" ]]
   }
 
   # Función interna para actualizar un token en el archivo .env
@@ -268,9 +268,6 @@ function deploy() {
   # Función interna para solicitar tokens al usuario
   prompt_deploy_tokens() {
     local quicksilver_url="${DEPLOY_SERVER_URL}/login/?next=/cd/react-api/check-auth-status/"
-    
-    msg "Abriendo Quicksilver en el navegador..." --info
-    msg --blank
     msg "Pasos para obtener tus tokens:" --dim
     msg "1. Inicia sesión con tus credenciales de Santander" --dim --tab 1
     msg "2. Una vez autenticado, abre las DevTools (Cmd+Option+I)" --dim --tab 1
@@ -296,13 +293,10 @@ function deploy() {
 
   # Intentar usar tokens almacenados en .env
   if [[ -n "$DEPLOY_CSRF_TOKEN" ]] && [[ -n "$DEPLOY_SESSION_ID" ]]; then
-    msg "Verificando tokens almacenados..." --info
     if validate_deploy_tokens "$DEPLOY_CSRF_TOKEN" "$DEPLOY_SESSION_ID"; then
-      msg "Tokens válidos" --success
       CSRF_TOKEN="$DEPLOY_CSRF_TOKEN"
       SESSION_ID="$DEPLOY_SESSION_ID"
     else
-      msg "Tokens expirados, solicitando nuevos..." --warning
       prompt_deploy_tokens || return 1
       update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
       update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
