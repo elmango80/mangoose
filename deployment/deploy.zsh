@@ -306,20 +306,22 @@ function deploy() {
     fi
   }
 
-  # Intentar usar tokens almacenados en .env
-  if [[ -n "$DEPLOY_CSRF_TOKEN" ]] && [[ -n "$DEPLOY_SESSION_ID" ]]; then
-    if validate_deploy_tokens "$DEPLOY_CSRF_TOKEN" "$DEPLOY_SESSION_ID"; then
-      CSRF_TOKEN="$DEPLOY_CSRF_TOKEN"
-      SESSION_ID="$DEPLOY_SESSION_ID"
+  # Intentar usar tokens almacenados en .env (no necesario en dry-run)
+  if [[ "$DRY_RUN" == false ]]; then
+    if [[ -n "$DEPLOY_CSRF_TOKEN" ]] && [[ -n "$DEPLOY_SESSION_ID" ]]; then
+      if validate_deploy_tokens "$DEPLOY_CSRF_TOKEN" "$DEPLOY_SESSION_ID"; then
+        CSRF_TOKEN="$DEPLOY_CSRF_TOKEN"
+        SESSION_ID="$DEPLOY_SESSION_ID"
+      else
+        prompt_deploy_tokens || return 1
+        update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
+        update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
+      fi
     else
       prompt_deploy_tokens || return 1
       update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
       update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
     fi
-  else
-    prompt_deploy_tokens || return 1
-    update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
-    update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
   fi
 
   # Verificar que DEPLOY_ENVIRONMENTS esté configurado
