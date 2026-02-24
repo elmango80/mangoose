@@ -62,11 +62,13 @@ function deploy() {
     msg "  deploy --list-services                                     # Lista todos los servicios disponibles"
     msg "  deploy --help                                              # Muestra esta ayuda"
     msg --blank
-    msg "Cómo obtener el token CSRF:"
-    msg "  1. Ejecuta: qs-login (abre Quicksilver en el navegador)"
-    msg "  2. Inicia sesión con tus credenciales"
-    msg "  3. Abre DevTools (Cmd+Option+I) > Application > Cookies"
-    msg "  4. Copia el valor de 'csrftoken'"
+    msg "Autenticación:"
+    msg "  Los tokens se almacenan en .env y se reutilizan automáticamente."
+    msg "  Solo se solicitan nuevos tokens si los almacenados han expirado."
+    msg "  Para obtener tokens manualmente:"
+    msg "    1. Inicia sesión en Quicksilver"
+    msg "    2. Abre DevTools (Cmd+Option+I) > Application > Cookies"
+    msg "    3. Copia 'csrftoken' y 'sessionid'"
   }
   
   # Función interna para listar servicios
@@ -233,34 +235,82 @@ function deploy() {
     return 1
   fi
   
-  local QUICKSILVER_URL="${DEPLOY_SERVER_URL}/login/?next=/cd/react-api/check-auth-status/"
   local CSRF_TOKEN=""
   local SESSION_ID=""
 
-  msg "Abriendo Quicksilver en el navegador..." --info
-  msg --blank
-  msg "Pasos para obtener tus tokens:" --dim
-  msg "1. Inicia sesión con tus credenciales de Santander" --dim --tab 1
-  msg "2. Una vez autenticado, abre las DevTools (Cmd+Option+I)" --dim --tab 1
-  msg "3. Ve a la pestaña 'Application' > 'Cookies'" --dim --tab 1
-  msg "4. Busca y copia estos valores:" --dim --tab 1
-  msg "   • csrftoken" --dim --tab 2
-  msg "   • sessionid" --dim --tab 2
-  msg --blank
-  
-  # Abrir en el navegador predeterminado
-  open "$QUICKSILVER_URL"
+  # Función interna para validar tokens contra Quicksilver
+  validate_deploy_tokens() {
+    local token="$1"
+    local session="$2"
+    local status=$(curl -s -o /dev/null -w "%{http_code}" \
+      "${DEPLOY_SERVER_URL}/cd/react-api/check-auth-status/" \
+      -H 'accept: application/json, text/plain, */*' \
+      -b "csrftoken=$token; sessionid=$session")
+    [[ "$status" == "200" ]]
+  }
 
-  # Solicitar cookies al usuario
-  msg "Token: " --no-newline
-  read CSRF_TOKEN
-  
-  msg "ID de la sesión: " --no-newline
-  read SESSION_ID
+  # Función interna para actualizar un token en el archivo .env
+  update_env_token() {
+    local var_name="$1"
+    local var_value="$2"
+    local env_file="${ZSH_FUNCTIONS_ENV_FILE:-${ZSH_FUNCTIONS_DIR}/.env}"
+    
+    if [[ -f "$env_file" ]]; then
+      if grep -q "^export ${var_name}=" "$env_file"; then
+        sed -i '' "s|^export ${var_name}=.*|export ${var_name}=\"${var_value}\"|" "$env_file"
+      else
+        echo "export ${var_name}=\"${var_value}\"" >> "$env_file"
+      fi
+      export "${var_name}=${var_value}"
+    fi
+  }
 
-  if [[ -z "$CSRF_TOKEN" ]] || [[ -z "$SESSION_ID" ]]; then
-    msg "Error: Debes proporcionar ambos datos" --error
-    return 1
+  # Función interna para solicitar tokens al usuario
+  prompt_deploy_tokens() {
+    local quicksilver_url="${DEPLOY_SERVER_URL}/login/?next=/cd/react-api/check-auth-status/"
+    
+    msg "Abriendo Quicksilver en el navegador..." --info
+    msg --blank
+    msg "Pasos para obtener tus tokens:" --dim
+    msg "1. Inicia sesión con tus credenciales de Santander" --dim --tab 1
+    msg "2. Una vez autenticado, abre las DevTools (Cmd+Option+I)" --dim --tab 1
+    msg "3. Ve a la pestaña 'Application' > 'Cookies'" --dim --tab 1
+    msg "4. Busca y copia estos valores:" --dim --tab 1
+    msg "   • csrftoken" --dim --tab 2
+    msg "   • sessionid" --dim --tab 2
+    msg --blank
+    
+    open "$quicksilver_url"
+
+    msg "Token: " --no-newline
+    read CSRF_TOKEN
+    
+    msg "ID de la sesión: " --no-newline
+    read SESSION_ID
+
+    if [[ -z "$CSRF_TOKEN" ]] || [[ -z "$SESSION_ID" ]]; then
+      msg "Error: Debes proporcionar ambos datos" --error
+      return 1
+    fi
+  }
+
+  # Intentar usar tokens almacenados en .env
+  if [[ -n "$DEPLOY_CSRF_TOKEN" ]] && [[ -n "$DEPLOY_SESSION_ID" ]]; then
+    msg "Verificando tokens almacenados..." --info
+    if validate_deploy_tokens "$DEPLOY_CSRF_TOKEN" "$DEPLOY_SESSION_ID"; then
+      msg "Tokens válidos" --success
+      CSRF_TOKEN="$DEPLOY_CSRF_TOKEN"
+      SESSION_ID="$DEPLOY_SESSION_ID"
+    else
+      msg "Tokens expirados, solicitando nuevos..." --warning
+      prompt_deploy_tokens || return 1
+      update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
+      update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
+    fi
+  else
+    prompt_deploy_tokens || return 1
+    update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
+    update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
   fi
 
   # Verificar que DEPLOY_ENVIRONMENTS esté configurado

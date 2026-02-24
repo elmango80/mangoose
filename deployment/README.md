@@ -105,13 +105,20 @@ Requiere tokens de autenticación:
 - **CSRF Token** - Token de seguridad del servidor
 - **Session ID** - ID de sesión del usuario
 
-**Cómo obtener tokens:**
+**Gestión automática de tokens:**
 
-1. Ejecuta `qs-login`
+Los tokens se almacenan en el archivo `.env` (`DEPLOY_CSRF_TOKEN` y `DEPLOY_SESSION_ID`) y se reutilizan automáticamente entre deploys. El flujo es:
+
+1. Si hay tokens almacenados → se validan contra Quicksilver
+2. Si son válidos → se usan directamente (sin intervención del usuario)
+3. Si son inválidos o no existen → se solicitan nuevos y se guardan en `.env`
+
+**Obtención manual de tokens (solo cuando se solicitan):**
+
+1. Se abre Quicksilver automáticamente en el navegador
 2. Inicia sesión con tus credenciales
 3. DevTools → Application → Cookies
 4. Copia `csrftoken` y `sessionid`
-5. Los tokens se solicitan al ejecutar el comando
 
 ## Manejo de Errores
 
@@ -136,6 +143,8 @@ Deben configurarse en tu archivo `.env`:
 - `DEPLOY_APPS` - Array de aplicaciones (formato: `"nombre_app:id_app"`)
 - `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id:nombre_app"`)
 - `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre"`)
+- `DEPLOY_CSRF_TOKEN` - Token CSRF (se actualiza automáticamente)
+- `DEPLOY_SESSION_ID` - ID de sesión (se actualiza automáticamente)
 
 ## Uso
 
