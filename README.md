@@ -99,16 +99,16 @@ code ~/.config/zsh/mangoose/.env
 | Variable              | Descripción                                                       | Ejemplo                                    |
 | --------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
 | `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                               | `https://deploy-server.example.com`        |
-| `DEPLOY_APPS`         | Array de aplicaciones (formato: `NOMBRE_APP:ID_APP`)              | `("ods-pri:138" "ods-api:140")`            |
-| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID:NOMBRE_APP`)  | `("auth:1001:ods-pri" "api:2001:ods-api")` |
+| `DEPLOY_APPS`         | Array de aplicaciones (formato: `ID_APP:NOMBRE_APP`)              | `("138:ods-pri" "140:ods-api")`            |
+| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `ID:NOMBRE:NOMBRE_APP`)  | `("1001:auth:ods-pri" "2001:api:ods-api")` |
 | `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE:NOMBRE_APP`) | `("1001:DEV:ods-pri" "2001:DEV:ods-api")`  |
 
 **Formato de `DEPLOY_APPS`:**
 
 ```zsh
 DEPLOY_APPS=(
-  "ods-pri:138"
-  "ods-api:140"
+  "138:ods-pri"
+  "140:ods-api"
 )
 ```
 
@@ -116,9 +116,9 @@ DEPLOY_APPS=(
 
 ```zsh
 DEPLOY_SERVICES=(
-  "auth:1001:ods-pri"
-  "users:1002:ods-pri"
-  "api-data:2001:ods-api"
+  "1001:auth:ods-pri"
+  "1002:users:ods-pri"
+  "2001:api-data:ods-api"
 )
 ```
 
@@ -157,13 +157,13 @@ export OTRA_VARIABLE="valor_sin_comillas"
 
 # Arrays (para DEPLOY_APPS, DEPLOY_SERVICES y DEPLOY_ENVIRONMENTS)
 export DEPLOY_APPS=(
-  "ods-pri:138"
-  "ods-api:140"
+  "138:ods-pri"
+  "140:ods-api"
 )
 
 export DEPLOY_SERVICES=(
-  "auth:1001:ods-pri"
-  "users:1002:ods-pri"
+  "1001:auth:ods-pri"
+  "1002:users:ods-pri"
 )
 
 export DEPLOY_ENVIRONMENTS=(

@@ -30,13 +30,13 @@ function deploy() {
     # Listar servicios dinámicamente desde DEPLOY_SERVICES agrupados por app
     if [[ -n "${DEPLOY_APPS}" ]] && [[ ${#DEPLOY_APPS[@]} -gt 0 ]]; then
       for app_entry in "${DEPLOY_APPS[@]}"; do
-        local app_n="${app_entry%%:*}"
-        local app_i="${app_entry#*:}"
+        local app_i="${app_entry%%:*}"
+        local app_n="${app_entry#*:}"
         msg "  [$app_n (ID: $app_i)]"
         for service_entry in "${DEPLOY_SERVICES[@]}"; do
-          local svc_name="${service_entry%%:*}"
+          local svc_id="${service_entry%%:*}"
           local svc_rest="${service_entry#*:}"
-          local svc_id="${svc_rest%%:*}"
+          local svc_name="${svc_rest%%:*}"
           local svc_app="${svc_rest#*:}"
           if [[ "$svc_app" == "$app_n" ]]; then
             msg "    ${svc_name}$(printf '%*s' $((24 - ${#svc_name})) '')ID: ${svc_id}"
@@ -48,8 +48,8 @@ function deploy() {
     msg "Entornos de despliegue:"
     if [[ -n "${DEPLOY_APPS}" ]] && [[ ${#DEPLOY_APPS[@]} -gt 0 ]]; then
       for app_entry in "${DEPLOY_APPS[@]}"; do
-        local app_n="${app_entry%%:*}"
-        local app_i="${app_entry#*:}"
+        local app_i="${app_entry%%:*}"
+        local app_n="${app_entry#*:}"
         msg "  [$app_n (ID: $app_i)]"
         local env_idx=1
         for env_entry in "${DEPLOY_ENVIRONMENTS[@]}"; do
@@ -94,14 +94,14 @@ function deploy() {
     msg "Servicios disponibles para deployment:" --info
     msg --blank
     for app_entry in "${DEPLOY_APPS[@]}"; do
-      local app_n="${app_entry%%:*}"
-      local app_i="${app_entry#*:}"
+      local app_i="${app_entry%%:*}"
+      local app_n="${app_entry#*:}"
       msg "[$app_n] (App ID: $app_i)" --info --tab 1
       local app_service_count=0
       for service_entry in "${DEPLOY_SERVICES[@]}"; do
-        local svc_name="${service_entry%%:*}"
+        local svc_id="${service_entry%%:*}"
         local svc_rest="${service_entry#*:}"
-        local svc_id="${svc_rest%%:*}"
+        local svc_name="${svc_rest%%:*}"
         local svc_app="${svc_rest#*:}"
         if [[ "$svc_app" == "$app_n" ]]; then
           msg "• ${svc_name}$(printf '%*s' $((30 - ${#svc_name})) '')ID: ${svc_id}" --success --no-icon --tab 2
@@ -156,9 +156,9 @@ function deploy() {
   # Buscar el servicio en el array DEPLOY_SERVICES
   local SERVICE_FOUND=false
   for service_entry in "${DEPLOY_SERVICES[@]}"; do
-    local service_name="${service_entry%%:*}"
+    local service_id="${service_entry%%:*}"
     local service_rest="${service_entry#*:}"
-    local service_id="${service_rest%%:*}"
+    local service_name="${service_rest%%:*}"
     local service_app_name="${service_rest#*:}"
     
     if [[ "$service_name" == "$SERVICE" ]]; then
@@ -174,7 +174,8 @@ function deploy() {
     msg "Error: El servicio '$SERVICE' no está definido en la configuración" --error
     msg "Servicios disponibles:" --dim
     for service_entry in "${DEPLOY_SERVICES[@]}"; do
-      local service_name="${service_entry%%:*}"
+      local svc_rest="${service_entry#*:}"
+      local service_name="${svc_rest%%:*}"
       msg "  - $service_name" --dim
     done
     msg --blank
@@ -192,8 +193,8 @@ function deploy() {
   
   local APP_FOUND=false
   for app_entry in "${DEPLOY_APPS[@]}"; do
-    local app_name="${app_entry%%:*}"
-    local app_id="${app_entry#*:}"
+    local app_id="${app_entry%%:*}"
+    local app_name="${app_entry#*:}"
     
     if [[ "$app_name" == "$APP_NAME" ]]; then
       APP_ID="$app_id"
@@ -206,7 +207,7 @@ function deploy() {
     msg "Error: La aplicación '$APP_NAME' del servicio '$SERVICE' no está definida en DEPLOY_APPS" --error
     msg "Aplicaciones disponibles:" --dim
     for app_entry in "${DEPLOY_APPS[@]}"; do
-      local app_name="${app_entry%%:*}"
+      local app_name="${app_entry#*:}"
       msg "  - $app_name" --dim
     done
     return 1

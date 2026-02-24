@@ -140,8 +140,8 @@ Los tokens se almacenan en el archivo `.env` (`DEPLOY_CSRF_TOKEN` y `DEPLOY_SESS
 Deben configurarse en tu archivo `.env`:
 
 - `DEPLOY_SERVER_URL` - URL del servidor de deployment
-- `DEPLOY_APPS` - Array de aplicaciones (formato: `"nombre_app:id_app"`)
-- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id:nombre_app"`)
+- `DEPLOY_APPS` - Array de aplicaciones (formato: `"id_app:nombre_app"`)
+- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"id:nombre:nombre_app"`)
 - `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre:nombre_app"`)
 - `DEPLOY_CSRF_TOKEN` - Token CSRF (se actualiza automáticamente)
 - `DEPLOY_SESSION_ID` - ID de sesión (se actualiza automáticamente)
