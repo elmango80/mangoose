@@ -5,6 +5,8 @@ function deploy() {
   local VERSION=""
   local SERVICE=""
   local SERVICE_ID=""
+  local APP_ID=""
+  local APP_NAME=""
   local DRY_RUN=false
   local SPECIFIC_VERSION=""
   local CUSTOM_DESCRIPTION=""
@@ -25,12 +27,21 @@ function deploy() {
     msg "  -h, --help                  Muestra esta ayuda"
     msg --blank
     msg "Servicios disponibles:"
-    # Listar servicios dinámicamente desde DEPLOY_SERVICES
-    if [[ -n "${DEPLOY_SERVICES}" ]] && [[ ${#DEPLOY_SERVICES[@]} -gt 0 ]]; then
-      for service_entry in "${DEPLOY_SERVICES[@]}"; do
-        local service_name="${service_entry%%:*}"
-        local service_id="${service_entry#*:}"
-        msg "  ${service_name}$(printf '%*s' $((28 - ${#service_name})) '')ID: ${service_id}"
+    # Listar servicios dinámicamente desde DEPLOY_SERVICES agrupados por app
+    if [[ -n "${DEPLOY_APPS}" ]] && [[ ${#DEPLOY_APPS[@]} -gt 0 ]]; then
+      for app_entry in "${DEPLOY_APPS[@]}"; do
+        local app_n="${app_entry%%:*}"
+        local app_i="${app_entry#*:}"
+        msg "  [$app_n (ID: $app_i)]"
+        for service_entry in "${DEPLOY_SERVICES[@]}"; do
+          local svc_name="${service_entry%%:*}"
+          local svc_rest="${service_entry#*:}"
+          local svc_id="${svc_rest%%:*}"
+          local svc_app="${svc_rest#*:}"
+          if [[ "$svc_app" == "$app_n" ]]; then
+            msg "    ${svc_name}$(printf '%*s' $((24 - ${#svc_name})) '')ID: ${svc_id}"
+          fi
+        done
       done
     fi
     msg --blank
@@ -68,12 +79,24 @@ function deploy() {
     
     msg "Servicios disponibles para deployment:" --info
     msg --blank
-    for service_entry in "${DEPLOY_SERVICES[@]}"; do
-      local service_name="${service_entry%%:*}"
-      local service_id="${service_entry#*:}"
-      msg "• ${service_name}$(printf '%*s' $((30 - ${#service_name})) '')ID: ${service_id}" --success --no-icon --tab 1
+    for app_entry in "${DEPLOY_APPS[@]}"; do
+      local app_n="${app_entry%%:*}"
+      local app_i="${app_entry#*:}"
+      msg "[$app_n] (App ID: $app_i)" --info --tab 1
+      local app_service_count=0
+      for service_entry in "${DEPLOY_SERVICES[@]}"; do
+        local svc_name="${service_entry%%:*}"
+        local svc_rest="${service_entry#*:}"
+        local svc_id="${svc_rest%%:*}"
+        local svc_app="${svc_rest#*:}"
+        if [[ "$svc_app" == "$app_n" ]]; then
+          msg "• ${svc_name}$(printf '%*s' $((30 - ${#svc_name})) '')ID: ${svc_id}" --success --no-icon --tab 2
+          ((app_service_count++))
+        fi
+      done
+      msg "Subtotal: ${app_service_count} servicio(s)" --dim --tab 2
+      msg --blank
     done
-    msg --blank
     msg "Total: ${#DEPLOY_SERVICES[@]} servicio(s)" --dim
   }
   
@@ -120,10 +143,13 @@ function deploy() {
   local SERVICE_FOUND=false
   for service_entry in "${DEPLOY_SERVICES[@]}"; do
     local service_name="${service_entry%%:*}"
-    local service_id="${service_entry#*:}"
+    local service_rest="${service_entry#*:}"
+    local service_id="${service_rest%%:*}"
+    local service_app_name="${service_rest#*:}"
     
     if [[ "$service_name" == "$SERVICE" ]]; then
       SERVICE_ID="$service_id"
+      APP_NAME="$service_app_name"
       SERVICE_FOUND=true
       break
     fi
@@ -139,6 +165,36 @@ function deploy() {
     done
     msg --blank
     msg "Para agregar el servicio, edita: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
+  
+  # Resolver el APP_ID desde DEPLOY_APPS usando APP_NAME
+  if [[ -z "${DEPLOY_APPS}" ]] || [[ ${#DEPLOY_APPS[@]} -eq 0 ]]; then
+    msg "Error: No hay aplicaciones configuradas" --error
+    msg "Por favor, configura DEPLOY_APPS en el archivo .env" --dim
+    msg "Ver: ~/.config/zsh/functions/.env" --dim
+    return 1
+  fi
+  
+  local APP_FOUND=false
+  for app_entry in "${DEPLOY_APPS[@]}"; do
+    local app_name="${app_entry%%:*}"
+    local app_id="${app_entry#*:}"
+    
+    if [[ "$app_name" == "$APP_NAME" ]]; then
+      APP_ID="$app_id"
+      APP_FOUND=true
+      break
+    fi
+  done
+  
+  if [[ "$APP_FOUND" == false ]]; then
+    msg "Error: La aplicación '$APP_NAME' del servicio '$SERVICE' no está definida en DEPLOY_APPS" --error
+    msg "Aplicaciones disponibles:" --dim
+    for app_entry in "${DEPLOY_APPS[@]}"; do
+      local app_name="${app_entry%%:*}"
+      msg "  - $app_name" --dim
+    done
     return 1
   fi
   
@@ -298,7 +354,8 @@ function deploy() {
     msg "Iniciando deployment" --info --tab 2 --no-icon
     msg "============================" --info --no-icon
   fi
-  msg "Servicio: $SERVICE"
+  msg "Aplicación: $APP_NAME (ID: $APP_ID)"
+  msg "Servicio: $SERVICE (ID: $SERVICE_ID)"
   msg "Versión seleccionada: $VERSION"
   msg "Descripción: $DESCRIPTION"
   msg --blank
@@ -316,7 +373,7 @@ function deploy() {
       turn_the_command --command "sleep 1" --message "Desplegando en $ENV_NAME"
       # Modo dry-run: solo mostrar lo que se haría
       msg "Payload: {" --tab 1 --dim
-      msg "application: $DEPLOY_APP_ID" --tab 2 --dim 
+      msg "application: $APP_ID ($APP_NAME)" --tab 2 --dim 
       msg "service: $SERVICE_ID" --tab 2 --dim
       msg "environment: $ENV_ID" --tab 2 --dim
       msg "version: $VERSION" --tab 2 --dim
@@ -336,7 +393,7 @@ function deploy() {
           -H 'referer: ${DEPLOY_SERVER_URL}/deployment/new' \
           -H 'x-csrftoken: $CSRF_TOKEN' \
           -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' \
-          --data-raw '{\"application\":${DEPLOY_APP_ID},\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
+          --data-raw '{\"application\":${APP_ID},\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
       
       # Extraer el código HTTP
       local HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)

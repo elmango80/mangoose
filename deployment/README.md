@@ -133,8 +133,8 @@ Requiere tokens de autenticación:
 Deben configurarse en tu archivo `.env`:
 
 - `DEPLOY_SERVER_URL` - URL del servidor de deployment
-- `DEPLOY_APP_ID` - ID de la aplicación
-- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id"`)
+- `DEPLOY_APPS` - Array de aplicaciones (formato: `"nombre_app:id_app"`)
+- `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"nombre:id:nombre_app"`)
 - `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre"`)
 
 ## Uso
@@ -205,7 +205,7 @@ El payload enviado al servidor:
 
 ```json
 {
-  "application": 100,
+  "application": <APP_ID>,
   "service": <SERVICE_ID>,
   "environment": <ENV_ID>,
   "version": "<VERSION>",

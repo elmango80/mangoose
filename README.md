@@ -96,20 +96,29 @@ code ~/.config/zsh/mangoose/.env
 
 ##### Deployment
 
-| Variable              | Descripción                                            | Ejemplo                             |
-| --------------------- | ------------------------------------------------------ | ----------------------------------- |
-| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                    | `https://deploy-server.example.com` |
-| `DEPLOY_APP_ID`       | ID de la aplicación                                    | `100`                               |
-| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID`)  | `("auth:1001" "users:1002")`        |
-| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE`) | `("1001:DEVELOPMENT" "1003:QA")`    |
+| Variable              | Descripción                                                      | Ejemplo                                    |
+| --------------------- | ---------------------------------------------------------------- | ------------------------------------------ |
+| `DEPLOY_SERVER_URL`   | URL base del servidor de deployment                              | `https://deploy-server.example.com`        |
+| `DEPLOY_APPS`         | Array de aplicaciones (formato: `NOMBRE_APP:ID_APP`)             | `("ods-pri:138" "ods-api:140")`            |
+| `DEPLOY_SERVICES`     | Array de servicios disponibles (formato: `NOMBRE:ID:NOMBRE_APP`) | `("auth:1001:ods-pri" "api:2001:ods-api")` |
+| `DEPLOY_ENVIRONMENTS` | Array de entornos de deployment (formato: `ID:NOMBRE`)           | `("1001:DEVELOPMENT" "1003:QA")`           |
+
+**Formato de `DEPLOY_APPS`:**
+
+```zsh
+DEPLOY_APPS=(
+  "ods-pri:138"
+  "ods-api:140"
+)
+```
 
 **Formato de `DEPLOY_SERVICES`:**
 
 ```zsh
 DEPLOY_SERVICES=(
-  "auth:1001"
-  "users:1002"
-  "data:1003"
+  "auth:1001:ods-pri"
+  "users:1002:ods-pri"
+  "api-data:2001:ods-api"
 )
 ```
 
@@ -145,10 +154,15 @@ El archivo `.env` debe seguir este formato:
 export VARIABLE_NAME="valor"
 export OTRA_VARIABLE="valor_sin_comillas"
 
-# Arrays (para DEPLOY_SERVICES y DEPLOY_ENVIRONMENTS)
+# Arrays (para DEPLOY_APPS, DEPLOY_SERVICES y DEPLOY_ENVIRONMENTS)
+export DEPLOY_APPS=(
+  "ods-pri:138"
+  "ods-api:140"
+)
+
 export DEPLOY_SERVICES=(
-  "auth:1001"
-  "users:1002"
+  "auth:1001:ods-pri"
+  "users:1002:ods-pri"
 )
 
 export DEPLOY_ENVIRONMENTS=(
