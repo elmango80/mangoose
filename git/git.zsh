@@ -51,7 +51,7 @@ function no_branch_for_old_refs() {
         msg "  • Elimina ramas ya mergeadas en main/master"
         msg "  • Elimina ramas cuyo remoto fue eliminado (gone)"
         msg "  • Conserva ramas nunca publicadas y ramas con remoto activo"
-        msg "  • Excluye siempre: rama actual, main/master y patrones de GIT_BRANCH_EXCLUSIONS"
+        msg "  • Excluye siempre: main/master y patrones de GIT_BRANCH_EXCLUSIONS"
         msg "  • Pregunta antes de eliminar la rama actual si está obsoleta"
         msg --blank
         msg "${BOLD}EJEMPLOS:${NC}"
