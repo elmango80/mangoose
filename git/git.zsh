@@ -15,6 +15,7 @@ function no_branch_for_old_refs() {
   local dry_run=0
   local demo_mode=0
   local all_repos=0
+  local verbose=0
 
   # Procesar parámetros
   while [[ $# -gt 0 ]]; do
@@ -28,6 +29,9 @@ function no_branch_for_old_refs() {
       --all|-a)
         all_repos=1
         ;;
+      --verbose|-v)
+        verbose=1
+        ;;
       --help|-h)
         msg "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas locales que ya no son necesarias"
         msg --blank
@@ -37,6 +41,7 @@ function no_branch_for_old_refs() {
         msg "${BOLD}OPCIONES:${NC}"
         msg "  ${YELLOW}--dry-run${NC}    Muestra qué ramas se eliminarían sin eliminarlas realmente"
         msg "  ${YELLOW}--demo, -d${NC}   Simula la eliminación de ramas con pausa (para pruebas)"
+        msg "  ${YELLOW}--verbose, -v${NC} Muestra resumen detallado de ramas clasificadas y pide confirmación"
         msg "  ${YELLOW}--all, -a${NC}    Ejecuta la limpieza en todos los repositorios del directorio actual"
         msg "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda"
         msg --blank
@@ -82,6 +87,7 @@ function no_branch_for_old_refs() {
       local params=()
       [[ $dry_run -eq 1 ]] && params+=(--dry-run)
       [[ $demo_mode -eq 1 ]] && params+=(--demo)
+      [[ $verbose -eq 1 ]] && params+=(--verbose)
       
       no_branch_for_old_refs "${params[@]}"
       ((processed_count++))
@@ -158,27 +164,60 @@ function no_branch_for_old_refs() {
 
     # Si no hay nada que eliminar
     if [[ ${#to_delete[@]} -eq 0 ]] && [[ $current_branch_is_stale -eq 0 ]]; then
-      msg --blank
       msg "No hay ramas para eliminar. Todo limpio." --success
       return 0
     fi
 
+    # Resumen detallado solo en modo verbose
+    if [[ $verbose -eq 1 ]]; then
+      msg "Ramas mergeadas en ${GREEN}$git_master_branch${NC} (se eliminarán):" --success
+      if [[ ${#merged_branches[@]} -eq 0 ]]; then
+        msg "  (ninguna)" --dim
+      else
+        for b in "${merged_branches[@]}"; do msg "  - $b"; done
+      fi
+
+      msg "Ramas eliminadas del remoto (se eliminarán):" --error
+      if [[ ${#gone_branches[@]} -eq 0 ]]; then
+        msg "  (ninguna)" --dim
+      else
+        for b in "${gone_branches[@]}"; do msg "  - $b"; done
+      fi
+
+      msg "Ramas nunca publicadas (se conservarán):" --warning
+      if [[ ${#never_pushed_branches[@]} -eq 0 ]]; then
+        msg "  (ninguna)" --dim
+      else
+        for b in "${never_pushed_branches[@]}"; do msg "  - $b"; done
+      fi
+
+      msg "Ramas con remoto activo (se conservarán):" --info
+      if [[ ${#kept_branches[@]} -eq 0 ]]; then
+        msg "  (ninguna)" --dim
+      else
+        for b in "${kept_branches[@]}"; do msg "  - $b"; done
+      fi
+    fi
+
     if [[ $current_branch_is_stale -eq 1 ]]; then
-      msg --blank
       msg "Tu rama actual ${YELLOW}$current_branch${NC} también será eliminada ($current_branch_reason)" --warning
     fi
 
-    msg --blank
-    msg "Se eliminarán ${BOLD}$((${#to_delete[@]} + current_branch_is_stale))${NC} rama(s)."
-
-    # Modo dry-run: solo mostrar resumen
+    # Modo dry-run: mostrar qué se eliminaría
     if [[ $dry_run -eq 1 ]]; then
+      msg "Ramas que se eliminarían:" --info
+      for b in "${to_delete[@]}"; do
+        msg "  ${RED}- $b${NC}"
+      done
+      if [[ $current_branch_is_stale -eq 1 ]]; then
+        msg "  ${YELLOW}- $current_branch (rama actual, $current_branch_reason)${NC}"
+      fi
       msg "${YELLOW}(dry-run) No se eliminó ninguna rama.${NC}" --warning
       return 0
     fi
 
-    # Confirmación antes de eliminar
-    if [[ $demo_mode -eq 0 ]]; then
+    # Confirmación antes de eliminar (solo en modo verbose)
+    if [[ $verbose -eq 1 ]] && [[ $demo_mode -eq 0 ]]; then
       msg "¿Continuar? (s/N): " --no-newline
       local answer=$(read_single_char)
       if [[ "$answer" != "s" ]] && [[ "$answer" != "y" ]]; then
@@ -186,8 +225,6 @@ function no_branch_for_old_refs() {
         return 0
       fi
     fi
-
-    msg --blank
 
     # Eliminar ramas
     local deleted=0
@@ -209,7 +246,6 @@ function no_branch_for_old_refs() {
 
     # Manejar la rama actual si también está obsoleta
     if [[ $current_branch_is_stale -eq 1 ]]; then
-      msg --blank
       msg "¿Eliminar la rama actual y cambiar a ${GREEN}${ITALIC}$git_master_branch${NC}? (s/N): " --no-newline
       
       local answer=$(read_single_char)
@@ -230,7 +266,6 @@ function no_branch_for_old_refs() {
       fi
     fi
 
-    msg --blank
     msg "Resultado: ${GREEN}${deleted} eliminada(s)${NC}, ${RED}${failed} error(es)${NC}" --success
   fi
 }
@@ -280,7 +315,7 @@ function paranoid_sync() {
 
   # Si se especifica --all, ejecutar recursivamente en todos los repositorios
   if [[ $all_repos -eq 1 ]]; then
-    msg "${CYAN}Actualizando repositorios...${NC}"
+    msg "${CYAN}Actualizando repositorios${NC}"
     local processed_count=0
     for d in */
     do
