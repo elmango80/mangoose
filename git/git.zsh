@@ -29,7 +29,7 @@ function no_branch_for_old_refs() {
         all_repos=1
         ;;
       --help|-h)
-        msg "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas obsoletas que han sido eliminadas del remoto"
+        msg "${GREEN}no_branch_for_old_refs${NC} - Limpia ramas locales que ya no son necesarias"
         msg --blank
         msg "${BOLD}USO:${NC}"
         msg "  no_branch_for_old_refs [OPCIONES]"
@@ -41,12 +41,13 @@ function no_branch_for_old_refs() {
         msg "  ${YELLOW}--help, -h${NC}   Muestra este mensaje de ayuda"
         msg --blank
         msg "${BOLD}DESCRIPCIÓN:${NC}"
-        msg "  Esta función identifica ramas locales que han sido eliminadas del repositorio"
-        msg "  remoto y las elimina de tu repositorio local. Hará lo siguiente:"
-        msg "  • Actualiza y limpia referencias remotas"
-        msg "  • Identifica ramas con estado de seguimiento 'gone'"
-        msg "  • Elimina ramas obsoletas (excepto la rama actual)"
-        msg "  • Pregunta antes de eliminar la rama actual si también está obsoleta"
+        msg "  Identifica y elimina ramas locales que ya no son necesarias:"
+        msg "  • Actualiza y limpia referencias remotas (fetch --prune)"
+        msg "  • Elimina ramas ya mergeadas en main/master"
+        msg "  • Elimina ramas cuyo remoto fue eliminado (gone)"
+        msg "  • Conserva ramas nunca publicadas y ramas con remoto activo"
+        msg "  • Excluye siempre: rama actual, main/master y maintenance/*"
+        msg "  • Pregunta antes de eliminar la rama actual si está obsoleta"
         msg --blank
         msg "${BOLD}EJEMPLOS:${NC}"
         msg "  no_branch_for_old_refs                  # Limpia ramas obsoletas del repositorio actual"
@@ -64,6 +65,12 @@ function no_branch_for_old_refs() {
     esac
     shift
   done
+
+
+  # Mostrar mensaje informativo en modo demo
+  if [[ $demo_mode -eq 1 ]]; then
+    msg "Ejecutando en ${YELLOW}MODO DEMO${NC} - las ramas no se eliminarán realmente" --warning
+  fi
 
   # Si se especifica --all, ejecutar recursivamente en todos los repositorios
   if [[ $all_repos -eq 1 ]]; then
@@ -99,99 +106,165 @@ function no_branch_for_old_refs() {
     msg "Iniciando limpieza en ${GREEN}$repo_name${NC}"
 
     # Actualizar referencias remotas
-    git fetch --prune > /dev/null 2>&1
+    turn_the_command --command "git fetch --prune origin" --message "Actualizando referencias remotas"
 
-    # Obtener todas las ramas eliminadas del remoto
-    local all_stale_branches=$(git branch -vv | grep ': gone]' | awk '{print $1}')
-    
-    # Separar la rama actual de las demás
-    local other_stale_branches=""
+    # Clasificar ramas en 4 categorías
+    local -a merged_branches=()
+    local -a gone_branches=()
+    local -a never_pushed_branches=()
+    local -a kept_branches=()
     local current_branch_is_stale=0
-    
-    while IFS= read -r branch; do
-      if [[ -n "$branch" ]]; then
-        if [[ "$branch" == "*" ]]; then
+    local current_branch_reason=""
+
+    while IFS= read -r line; do
+      local branch=$(echo "$line" | sed 's/^\* //' | xargs)
+      [[ -z "$branch" ]] && continue
+
+      # Excluir main/master y maintenance/*
+      [[ "$branch" == "$git_master_branch" ]] && continue
+      [[ "$branch" =~ ^maintenance/ ]] && { kept_branches+=("$branch"); continue; }
+
+      # Obtener info de tracking con git for-each-ref (más robusto que parsear git branch -vv)
+      local tracking_info=$(git for-each-ref --format='%(upstream:short) %(upstream:track)' "refs/heads/$branch" 2>/dev/null)
+      local upstream=$(echo "$tracking_info" | awk '{print $1}')
+      local track_status=$(echo "$tracking_info" | grep -o '\[gone\]' || true)
+
+      # Verificar si está mergeada en la rama principal
+      local is_merged=$(git branch --merged "$git_master_branch" 2>/dev/null | grep -E "^\s+${branch}$" || true)
+
+      if [[ -n "$is_merged" ]]; then
+        if [[ "$branch" == "$current_branch" ]]; then
           current_branch_is_stale=1
+          current_branch_reason="mergeada"
         else
-          if [[ -n "$other_stale_branches" ]]; then
-            other_stale_branches="$other_stale_branches\n$branch"
-          else
-            other_stale_branches="$branch"
-          fi
+          merged_branches+=("$branch")
         fi
+      elif [[ -z "$upstream" ]]; then
+        never_pushed_branches+=("$branch")
+      elif [[ -n "$track_status" ]]; then
+        if [[ "$branch" == "$current_branch" ]]; then
+          current_branch_is_stale=1
+          current_branch_reason="gone"
+        else
+          gone_branches+=("$branch")
+        fi
+      else
+        kept_branches+=("$branch")
       fi
-    done <<< "$all_stale_branches"
-    
-    # Si no hay ramas para eliminar
-    if [[ -z "$all_stale_branches" ]]; then
-      msg "No se encontraron ramas obsoletas" --success
-      return 0
+    done < <(git branch --no-color | sed 's/^\*//')
+
+    # --- Mostrar resumen ---
+    msg --blank
+    msg "Ramas mergeadas en ${GREEN}$git_master_branch${NC} (se eliminarán):" --success
+    if [[ ${#merged_branches[@]} -eq 0 ]]; then
+      msg "  (ninguna)" --dim
+    else
+      for b in "${merged_branches[@]}"; do msg "  - $b"; done
     fi
 
-    if [[ $dry_run -eq 1 ]]; then
-      msg "Ramas que se eliminarían en ${ITALIC}$repo_name${NC}" --info
-      if [[ $current_branch_is_stale -eq 1 ]]; then
-        msg "La rama actual ha sido eliminada del remoto" --warning 
-        msg "${YELLOW}$current_branch${NC}" --tab 1
-        msg --blank
-      fi
-      if [[ -n "$other_stale_branches" ]]; then
-        echo -e "$other_stale_branches" | while read branch; do
-          if [[ -n "$branch" ]]; then
-            msg "  ${RED}- $branch${NC}"
-          fi
-        done
-      fi
-      return 0
+    msg --blank
+    msg "Ramas eliminadas del remoto (se eliminarán):" --error
+    if [[ ${#gone_branches[@]} -eq 0 ]]; then
+      msg "  (ninguna)" --dim
+    else
+      for b in "${gone_branches[@]}"; do msg "  - $b"; done
     fi
 
-    # Mostrar mensaje informativo en modo demo
-    if [[ $demo_mode -eq 1 ]]; then
-      msg "Ejecutando en ${YELLOW}MODO DEMO${NC} - las ramas no se eliminarán realmente" --warning
+    msg --blank
+    msg "Ramas nunca publicadas (se conservarán):" --warning
+    if [[ ${#never_pushed_branches[@]} -eq 0 ]]; then
+      msg "  (ninguna)" --dim
+    else
+      for b in "${never_pushed_branches[@]}"; do msg "  - $b"; done
+    fi
+
+    msg --blank
+    msg "Ramas con remoto activo (se conservarán):" --info
+    if [[ ${#kept_branches[@]} -eq 0 ]]; then
+      msg "  (ninguna)" --dim
+    else
+      for b in "${kept_branches[@]}"; do msg "  - $b"; done
+    fi
+
+    # Combinar ramas a eliminar
+    local -a to_delete=("${merged_branches[@]}" "${gone_branches[@]}")
+
+    # Si no hay nada que eliminar
+    if [[ ${#to_delete[@]} -eq 0 ]] && [[ $current_branch_is_stale -eq 0 ]]; then
       msg --blank
+      msg "No hay ramas para eliminar. Todo limpio." --success
+      return 0
     fi
 
-    # Eliminar primero las otras ramas
-    if [[ -n "$other_stale_branches" ]]; then
-      msg "🗑️ Eliminando ramas obsoletas en ${GREEN}$repo_name${NC}"
-      echo -e "$other_stale_branches" | while read branch; do
-        if [[ -n "$branch" ]]; then
-          if [[ $demo_mode -eq 1 ]]; then
-            turn_the_command --command "sleep 3" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
-          else
-            turn_the_command --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
-          fi
-          msg "\r${GREEN}✓ Rama eliminada ${RED}$branch${NC} "
-        fi
-      done
-    fi
-
-    # Manejar la rama actual si también está eliminada del remoto
     if [[ $current_branch_is_stale -eq 1 ]]; then
       msg --blank
-      msg "${YELLOW}Advertencia: Tu rama actual también ha sido eliminada del remoto.${NC}" --warning
-      msg "¿Quieres eliminar la rama actual y cambiar a ${GREEN}${ITALIC}$git_master_branch${NC}? (s/N): "
+      msg "Tu rama actual ${YELLOW}$current_branch${NC} también será eliminada ($current_branch_reason)" --warning
+    fi
+
+    msg --blank
+    msg "Se eliminarán ${BOLD}$((${#to_delete[@]} + current_branch_is_stale))${NC} rama(s)."
+
+    # Modo dry-run: solo mostrar resumen
+    if [[ $dry_run -eq 1 ]]; then
+      msg "${YELLOW}(dry-run) No se eliminó ninguna rama.${NC}" --warning
+      return 0
+    fi
+
+    # Confirmación antes de eliminar
+    if [[ $demo_mode -eq 0 ]]; then
+      msg "¿Continuar? (s/N): " --no-newline
+      local answer=$(read_single_char)
+      if [[ "$answer" != "s" ]] && [[ "$answer" != "y" ]]; then
+        msg "Operación cancelada."
+        return 0
+      fi
+    fi
+
+    msg --blank
+
+    # Eliminar ramas
+    local deleted=0
+    local failed=0
+    for branch in "${to_delete[@]}"; do
+      if [[ $demo_mode -eq 1 ]]; then
+        turn_the_command --command "sleep 0.25" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+      else
+        turn_the_command --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+      fi
+      if [[ $? -eq 0 ]]; then
+        msg "\r${GREEN}✓ Rama eliminada ${RED}$branch${NC} "
+        ((deleted++))
+      else
+        msg "\r${RED}✗ Error al eliminar ${RED}$branch${NC} "
+        ((failed++))
+      fi
+    done
+
+    # Manejar la rama actual si también está obsoleta
+    if [[ $current_branch_is_stale -eq 1 ]]; then
+      msg --blank
+      msg "¿Eliminar la rama actual y cambiar a ${GREEN}${ITALIC}$git_master_branch${NC}? (s/N): " --no-newline
       
-      answer=$(read_single_char)
+      local answer=$(read_single_char)
       
-      if [[ $answer == "s" ]] || [[ $answer == "y" ]]; then
+      if [[ "$answer" == "s" ]] || [[ "$answer" == "y" ]]; then
         if [[ $demo_mode -eq 0 ]]; then
-          msg "  • Cambiando a la rama ${GREEN}$git_master_branch${NC}"
+          msg "  Cambiando a la rama ${GREEN}$git_master_branch${NC}"
           git switch $git_master_branch > /dev/null 2>&1
         fi
 
         if [[ $demo_mode -eq 1 ]]; then
-          turn_the_command --command "sleep 3" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          turn_the_command --command "sleep 0.25" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         else
-          turn_the_command --command "git branch --delete --force \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          turn_the_command --command "git branch -D \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
         fi
         msg "\r${GREEN}✓ Rama eliminada ${RED}$current_branch${NC} "
+        ((deleted++))
       fi
     fi
 
-    if [[ -n "$other_stale_branches" || $current_branch_is_stale -eq 1 ]]; then
-      msg "Limpieza completada en ${BOLD_CYAN}$repo_name${NC}" --success
-    fi
+    msg --blank
+    msg "Resultado: ${GREEN}${deleted} eliminada(s)${NC}, ${RED}${failed} error(es)${NC}" --success
   fi
 }
 
