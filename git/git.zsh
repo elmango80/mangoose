@@ -153,39 +153,6 @@ function no_branch_for_old_refs() {
       fi
     done < <(git branch --no-color | sed 's/^\*//')
 
-    # --- Mostrar resumen ---
-    msg --blank
-    msg "Ramas mergeadas en ${GREEN}$git_master_branch${NC} (se eliminarán):" --success
-    if [[ ${#merged_branches[@]} -eq 0 ]]; then
-      msg "  (ninguna)" --dim
-    else
-      for b in "${merged_branches[@]}"; do msg "  - $b"; done
-    fi
-
-    msg --blank
-    msg "Ramas eliminadas del remoto (se eliminarán):" --error
-    if [[ ${#gone_branches[@]} -eq 0 ]]; then
-      msg "  (ninguna)" --dim
-    else
-      for b in "${gone_branches[@]}"; do msg "  - $b"; done
-    fi
-
-    msg --blank
-    msg "Ramas nunca publicadas (se conservarán):" --warning
-    if [[ ${#never_pushed_branches[@]} -eq 0 ]]; then
-      msg "  (ninguna)" --dim
-    else
-      for b in "${never_pushed_branches[@]}"; do msg "  - $b"; done
-    fi
-
-    msg --blank
-    msg "Ramas con remoto activo (se conservarán):" --info
-    if [[ ${#kept_branches[@]} -eq 0 ]]; then
-      msg "  (ninguna)" --dim
-    else
-      for b in "${kept_branches[@]}"; do msg "  - $b"; done
-    fi
-
     # Combinar ramas a eliminar
     local -a to_delete=("${merged_branches[@]}" "${gone_branches[@]}")
 
