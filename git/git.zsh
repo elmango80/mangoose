@@ -51,7 +51,7 @@ function no_branch_for_old_refs() {
         msg "  • Elimina ramas ya mergeadas en main/master"
         msg "  • Elimina ramas cuyo remoto fue eliminado (gone)"
         msg "  • Conserva ramas nunca publicadas y ramas con remoto activo"
-        msg "  • Excluye siempre: rama actual, main/master y maintenance/*"
+        msg "  • Excluye siempre: rama actual, main/master y patrones de GIT_BRANCH_EXCLUSIONS"
         msg "  • Pregunta antes de eliminar la rama actual si está obsoleta"
         msg --blank
         msg "${BOLD}EJEMPLOS:${NC}"
@@ -126,9 +126,20 @@ function no_branch_for_old_refs() {
       local branch=$(echo "$line" | sed 's/^\* //' | xargs)
       [[ -z "$branch" ]] && continue
 
-      # Excluir main/master y maintenance/*
+      # Excluir main/master
       [[ "$branch" == "$git_master_branch" ]] && continue
-      [[ "$branch" =~ ^maintenance/ ]] && { kept_branches+=("$branch"); continue; }
+
+      # Excluir ramas que coincidan con patrones de GIT_BRANCH_EXCLUSIONS
+      local excluded=0
+      if [[ -n "${GIT_BRANCH_EXCLUSIONS}" ]] && [[ ${#GIT_BRANCH_EXCLUSIONS[@]} -gt 0 ]]; then
+        for pattern in "${GIT_BRANCH_EXCLUSIONS[@]}"; do
+          if [[ "$branch" == ${~pattern} ]]; then
+            excluded=1
+            break
+          fi
+        done
+      fi
+      [[ $excluded -eq 1 ]] && { kept_branches+=("$branch"); continue; }
 
       # Obtener info de tracking con git for-each-ref (más robusto que parsear git branch -vv)
       local tracking_info=$(git for-each-ref --format='%(upstream:short) %(upstream:track)' "refs/heads/$branch" 2>/dev/null)
