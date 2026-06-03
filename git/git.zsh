@@ -11,6 +11,117 @@ function is_git_repository() {
   return 0
 }
 
+function git_worktree_goto() {
+  local target="$1"
+
+  if [[ "$target" == "--help" || "$target" == "-h" ]]
+  then
+    msg "Uso: gowt [OPCIÓN | NOMBRE]"
+    msg --blank
+    msg "Navega entre los worktrees del repositorio git actual."
+    msg --blank
+    msg "Argumentos:"
+    msg "  NOMBRE                  Nombre del worktree (carpeta o rama) al que saltar"
+    msg "  master                  Salta al worktree principal del repositorio"
+    msg --blank
+    msg "Opciones:"
+    msg "  -ls, --list             Lista todos los worktrees del repositorio"
+    msg "  -h,  --help             Muestra esta ayuda"
+    msg --blank
+    msg "Ejemplos:"
+    msg "  gowt --list             # Lista los worktrees disponibles"
+    msg "  gowt master             # Va al worktree principal"
+    msg "  gowt maintenance        # Va al worktree 'maintenance'"
+    return 0
+  fi
+
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1
+  then
+    msg "No estás dentro de un repositorio git" --error --to-stderr
+    return 1
+  fi
+  local worktrees_raw
+  worktrees_raw=$(git worktree list --porcelain 2>/dev/null)
+
+  if [[ -z "$worktrees_raw" ]]
+  then
+    msg "No se pudieron listar los worktrees" --error --to-stderr
+    return 1
+  fi
+
+  local -a paths branches
+  local current_path="" current_branch=""
+
+  while IFS= read -r line
+  do
+    if [[ "$line" == worktree\ * ]]
+    then
+      current_path="${line#worktree }"
+      current_branch=""
+    elif [[ "$line" == branch\ refs/heads/* ]]
+    then
+      current_branch="${line#branch refs/heads/}"
+    elif [[ "$line" == "detached" ]]
+    then
+      current_branch="(detached)"
+    elif [[ -z "$line" && -n "$current_path" ]]
+    then
+      paths+=("$current_path")
+      branches+=("$current_branch")
+      current_path=""
+      current_branch=""
+    fi
+  done <<< "$worktrees_raw"
+
+  if [[ -n "$current_path" ]]
+  then
+    paths+=("$current_path")
+    branches+=("$current_branch")
+  fi
+
+  local total=${#paths}
+
+  if [[ "$target" == "-ls" || "$target" == "--list" ]]
+  then
+    msg "Worktrees disponibles:"
+    local i
+    for (( i=1; i<=total; i++ ))
+    do
+      local label="${branches[$i]:-(sin rama)}"
+      local marker=""
+      [[ $i -eq 1 ]] && marker=" ${GREEN}[master]${NC}"
+      msg "  • ${BOLD}${label}${NC}${marker} → ${ITALIC}${paths[$i]}${NC}"
+    done
+    return 0
+  fi
+
+  if [[ -z "$target" ]]
+  then
+    msg "Uso: gowt <nombre-worktree> | master | -ls | --list" --error --to-stderr
+    return 1
+  fi
+
+  if [[ "$target" == "master" ]]
+  then
+    cd "${paths[1]}"
+    return $?
+  fi
+
+  local i
+  for (( i=1; i<=total; i++ ))
+  do
+    local base="${paths[$i]:t}"
+    if [[ "$base" == "$target" || "${branches[$i]}" == "$target" ]]
+    then
+      cd "${paths[$i]}"
+      return $?
+    fi
+  done
+
+  msg "No se encontró un worktree que coincida con ${BOLD}${target}${NC}" --error --to-stderr
+  return 1
+}
+
 function no_branch_for_old_refs() {
   local dry_run=0
   local demo_mode=0
