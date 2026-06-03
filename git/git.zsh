@@ -22,7 +22,7 @@ function git_worktree_goto() {
     msg --blank
     msg "Argumentos:"
     msg "  NOMBRE                  Nombre del worktree (carpeta o rama) al que saltar"
-    msg "  master                  Salta al worktree principal del repositorio"
+    msg "  root                    Salta al worktree principal del repositorio"
     msg --blank
     msg "Opciones:"
     msg "  -ls, --list             Lista todos los worktrees del repositorio"
@@ -30,7 +30,7 @@ function git_worktree_goto() {
     msg --blank
     msg "Ejemplos:"
     msg "  gowt --list             # Lista los worktrees disponibles"
-    msg "  gowt master             # Va al worktree principal"
+    msg "  gowt root               # Va al worktree principal"
     msg "  gowt maintenance        # Va al worktree 'maintenance'"
     return 0
   fi
@@ -84,24 +84,33 @@ function git_worktree_goto() {
   if [[ "$target" == "-ls" || "$target" == "--list" ]]
   then
     msg "Worktrees disponibles:"
+    local root="${paths[1]}"
+    local root_name="${root:t}"
     local i
     for (( i=1; i<=total; i++ ))
     do
-      local label="${branches[$i]:-(sin rama)}"
-      local marker=""
-      [[ $i -eq 1 ]] && marker=" ${GREEN}[master]${NC}"
-      msg "  • ${BOLD}${label}${NC}${marker} → ${ITALIC}${paths[$i]}${NC}"
+      local name=""
+      if [[ $i -eq 1 ]]
+      then
+        name="root"
+      else
+        name="${paths[$i]:t}"
+      fi
+      local branch="${branches[$i]:-(sin rama)}"
+      local relpath="${paths[$i]#$root}"
+      relpath="${root_name}${relpath}"
+      msg "  ${GREEN}[${name}]${NC} ${CYAN}${relpath}${NC} en ${PURPLE}"$'\ue0a0'" ${branch}${NC}"
     done
     return 0
   fi
 
   if [[ -z "$target" ]]
   then
-    msg "Uso: gowt <nombre-worktree> | master | -ls | --list" --error --to-stderr
+    msg "Uso: gowt <nombre-worktree> | root | -ls | --list" --error --to-stderr
     return 1
   fi
 
-  if [[ "$target" == "master" ]]
+  if [[ "$target" == "root" ]]
   then
     cd "${paths[1]}"
     return $?
