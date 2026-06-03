@@ -21,6 +21,7 @@ function print_indentation() {
   fi
   
   local tab_string=""
+  local i
   for ((i=0; i<tabs; i++)); do
     tab_string="${tab_string}  "
   done
