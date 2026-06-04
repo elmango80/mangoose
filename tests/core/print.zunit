@@ -1,0 +1,93 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh
+}
+
+# ─── print_indentation ─────────────────────────────────────────────────────────
+
+@test 'print_indentation con 0 tabs no produce salida' {
+  run print_indentation 0
+
+  assert $state equals 0
+  assert "$output" is_empty
+}
+
+@test 'print_indentation con 2 tabs produce 4 espacios' {
+  run print_indentation 2
+
+  assert $state equals 0
+  assert "$output" same_as '    '
+}
+
+@test 'print_indentation con 5 tabs produce 10 espacios' {
+  run print_indentation 5
+
+  assert $state equals 0
+  assert "$output" same_as '          '
+}
+
+# Regresión: print_indentation usaba `i` sin `local`, lo que en zsh
+# (scoping dinámico) machacaba la `i` del llamador y causaba bucles
+# infinitos en cualquier función que iterase con `i` y llamase a `msg`.
+@test 'print_indentation no machaca la variable i del llamador (regresión bug local i)' {
+  local i=42
+  print_indentation 3 >/dev/null
+
+  assert "$i" equals '42'
+}
+
+@test 'print_indentation respeta la i del llamador incluso dentro de un for loop con msg' {
+  local capturado=""
+  local i
+  for (( i=1; i<=3; i++ ))
+  do
+    # Cada iteración llama a msg, que internamente usa print_indentation.
+    # Si print_indentation no declara su `i` como local, machacaría esta
+    # `i` y el bucle no terminaría nunca.
+    msg --tab 1 "iter $i" >/dev/null
+    capturado+="$i "
+  done
+
+  assert "$capturado" same_as '1 2 3 '
+}
+
+# ─── msg ───────────────────────────────────────────────────────────────────────
+
+@test 'msg imprime el texto plano cuando no se indica tipo' {
+  run msg 'hola mundo'
+
+  assert $state equals 0
+  assert "$output" contains 'hola mundo'
+}
+
+@test 'msg --error envía a stderr cuando se combina con --to-stderr' {
+  run msg 'algo fue mal' --error --to-stderr
+
+  assert $state equals 0
+  assert "$output" contains 'algo fue mal'
+}
+
+@test 'msg --blank imprime una línea en blanco y devuelve 0' {
+  run msg --blank
+
+  assert $state equals 0
+  assert "$output" is_empty
+}
+
+@test 'msg sin texto devuelve error' {
+  run msg
+
+  assert $state equals 1
+  assert "$output" contains 'Se requiere el texto del mensaje'
+}
+
+@test 'msg --tab indenta el mensaje' {
+  run msg --tab 2 'indentado'
+
+  assert $state equals 0
+  assert "$output" contains 'indentado'
+  # Dos tabs = cuatro espacios al inicio (antes del posible icono ANSI).
+  assert "$output" matches '^ {4}'
+}

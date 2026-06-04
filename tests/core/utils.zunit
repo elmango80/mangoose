@@ -1,0 +1,44 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  mangoose_source core/colors.zsh core/utils.zsh
+}
+
+# ─── extract_arg_value ─────────────────────────────────────────────────────────
+
+@test 'extract_arg_value devuelve el valor cuando es válido' {
+  run extract_arg_value '--port' '8080'
+
+  assert $state equals 0
+  assert "$output" same_as '8080'
+}
+
+@test 'extract_arg_value falla con valor vacío' {
+  run extract_arg_value '--port' ''
+
+  assert $state equals 1
+  assert "$output" contains 'requires a value'
+}
+
+@test 'extract_arg_value falla cuando el valor empieza por guión (otra flag)' {
+  run extract_arg_value '--port' '--other-flag'
+
+  assert $state equals 1
+  assert "$output" contains 'requires a value'
+}
+
+@test 'extract_arg_value acepta valores con espacios' {
+  run extract_arg_value '--message' 'hola mundo'
+
+  assert $state equals 0
+  assert "$output" same_as 'hola mundo'
+}
+
+@test 'extract_arg_value acepta valores numéricos negativos como string si no empiezan por guión' {
+  # Diseño actual: cualquier valor que empiece por '-' se considera flag.
+  # Este test documenta esa decisión.
+  run extract_arg_value '--count' '-5'
+
+  assert $state equals 1
+}

@@ -1,0 +1,167 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  load ../_support/git_mock
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh git/git.zsh
+}
+
+# ─── --help / -h ───────────────────────────────────────────────────────────────
+
+@test 'gowt --help muestra el bloque de ayuda y sale con 0' {
+  run git_worktree_goto --help
+
+  assert $state equals 0
+  assert "$output" contains 'Uso: gowt'
+  assert "$output" contains '--list'
+  assert "$output" contains 'root'
+}
+
+@test 'gowt -h muestra ayuda igual que --help' {
+  run git_worktree_goto -h
+
+  assert $state equals 0
+  assert "$output" contains 'Uso: gowt'
+}
+
+# ─── Validación de contexto git ────────────────────────────────────────────────
+
+@test 'gowt falla cuando no estamos dentro de un repositorio git' {
+  function git() {
+    [[ "$1" == "rev-parse" ]] && return 128
+    return 1
+  }
+
+  run git_worktree_goto --list
+
+  assert $state equals 1
+  assert "$output" contains 'No estás dentro de un repositorio git'
+}
+
+# ─── --list / -ls ──────────────────────────────────────────────────────────────
+
+@test 'gowt --list muestra el worktree principal etiquetado como root' {
+  mock_git /tmp/fake-repo:master
+
+  run git_worktree_goto --list
+
+  assert $state equals 0
+  assert "$output" contains 'Worktrees disponibles'
+  assert "$output" contains '[root]'
+  assert "$output" contains 'master'
+}
+
+@test 'gowt -ls (alias corto) funciona igual que --list' {
+  mock_git /tmp/fake-repo:master
+
+  run git_worktree_goto -ls
+
+  assert $state equals 0
+  assert "$output" contains '[root]'
+}
+
+@test 'gowt --list muestra todos los worktrees con su nombre y rama' {
+  mock_git \
+    /tmp/fake-repo:master \
+    /tmp/fake-repo/.worktree/backup:feature/backup \
+    /tmp/fake-repo/.worktree/hotfix:hotfix/critical
+
+  run git_worktree_goto --list
+
+  assert $state equals 0
+  assert "$output" contains '[root]'
+  assert "$output" contains '[backup]'
+  assert "$output" contains '[hotfix]'
+  assert "$output" contains 'feature/backup'
+  assert "$output" contains 'hotfix/critical'
+}
+
+@test 'gowt --list muestra (sin rama) para worktrees en detached HEAD' {
+  mock_git \
+    /tmp/fake-repo:master \
+    /tmp/fake-repo/.worktree/temp:DETACHED
+
+  run git_worktree_goto --list
+
+  assert $state equals 0
+  assert "$output" contains '[temp]'
+  assert "$output" contains '(detached)'
+}
+
+# ─── Llamada sin argumentos ────────────────────────────────────────────────────
+
+@test 'gowt sin argumentos imprime mensaje de uso y devuelve 1' {
+  mock_git /tmp/fake-repo:master
+
+  run git_worktree_goto
+
+  assert $state equals 1
+  assert "$output" contains 'Uso: gowt'
+}
+
+# ─── Navegación ────────────────────────────────────────────────────────────────
+
+@test 'gowt root navega al primer worktree' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-gowt-root)
+  mock_git "${tmpdir}":master
+
+  local start_pwd="$PWD"
+  git_worktree_goto root
+  local exit_code=$?
+  local final_pwd="$PWD"
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $exit_code equals 0
+  assert "$final_pwd" same_as "$tmpdir"
+}
+
+@test 'gowt <nombre-carpeta> navega al worktree con ese basename' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-gowt-folder)
+  mkdir -p "${tmpdir}/.worktree/backup"
+  mock_git \
+    "${tmpdir}":master \
+    "${tmpdir}/.worktree/backup":feature/backup
+
+  local start_pwd="$PWD"
+  git_worktree_goto backup
+  local exit_code=$?
+  local final_pwd="$PWD"
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $exit_code equals 0
+  assert "$final_pwd" same_as "${tmpdir}/.worktree/backup"
+}
+
+@test 'gowt <nombre-rama> navega al worktree cuya rama coincide' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-gowt-branch)
+  mkdir -p "${tmpdir}/.worktree/wt1"
+  mock_git \
+    "${tmpdir}":master \
+    "${tmpdir}/.worktree/wt1":feature/login
+
+  local start_pwd="$PWD"
+  git_worktree_goto feature/login
+  local exit_code=$?
+  local final_pwd="$PWD"
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $exit_code equals 0
+  assert "$final_pwd" same_as "${tmpdir}/.worktree/wt1"
+}
+
+@test 'gowt con nombre inexistente devuelve error y no cambia de directorio' {
+  mock_git /tmp/fake-repo:master
+
+  local start_pwd="$PWD"
+  run git_worktree_goto no-existe
+
+  assert $state equals 1
+  assert "$output" contains 'No se encontró un worktree que coincida'
+  assert "$PWD" same_as "$start_pwd"
+}
