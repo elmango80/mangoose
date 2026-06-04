@@ -1,0 +1,239 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  load ../_support/mocks
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh deployment/deploy.zsh
+
+  stub_turn_the_command
+
+  # Asegurar que ninguna variable global del .env del usuario contamine los
+  # tests: cada test que las necesite las define explícitamente.
+  unset DEPLOY_SERVICES DEPLOY_APPS DEPLOY_ENVIRONMENTS DEPLOY_SERVER_URL DEPLOY_TOKEN
+}
+
+# ─── --help / -h ──────────────────────────────────────────────────────────────
+
+@test 'deploy --help muestra ayuda y sale con 0' {
+  run deploy --help
+
+  assert $state equals 0
+  assert "$output" contains 'Usage: deploy'
+  assert "$output" contains '--dry-run'
+  assert "$output" contains '--list-services'
+  assert "$output" contains 'Autenticación'
+}
+
+@test 'deploy -h funciona igual que --help' {
+  run deploy -h
+
+  assert $state equals 0
+  assert "$output" contains 'Usage: deploy'
+}
+
+# ─── --list-services ──────────────────────────────────────────────────────────
+
+@test 'deploy --list-services sin DEPLOY_SERVICES avisa de configuración faltante' {
+  run deploy --list-services
+
+  # NOTA: list_services internamente devuelve 1, pero el caller hace
+  # `return 0` después, por lo que la función deploy siempre sale con 0.
+  assert $state equals 0
+  assert "$output" contains 'No hay servicios configurados'
+}
+
+@test 'deploy -l es alias corto de --list-services' {
+  run deploy -l
+
+  assert $state equals 0
+  assert "$output" contains 'No hay servicios configurados'
+}
+
+@test 'deploy --list-services con DEPLOY_SERVICES lista cada servicio agrupado por app' {
+  DEPLOY_APPS=("1:security-base" "2:login-base")
+  DEPLOY_SERVICES=(
+    "10:security:security-base"
+    "11:auth:security-base"
+    "20:login:login-base"
+  )
+
+  run deploy --list-services
+
+  assert $state equals 0
+  assert "$output" contains 'security-base'
+  assert "$output" contains 'login-base'
+  assert "$output" contains 'security'
+  assert "$output" contains 'auth'
+  assert "$output" contains 'login'
+  assert "$output" contains 'Total: 3 servicio(s)'
+}
+
+# ─── Argumentos requeridos ────────────────────────────────────────────────────
+
+@test 'deploy sin argumentos pide especificar el servicio y falla con 1' {
+  run deploy
+
+  assert $state equals 1
+  assert "$output" contains 'Se requiere especificar el servicio'
+}
+
+@test 'deploy con DEPLOY_SERVICES vacío pero servicio pedido devuelve error de configuración' {
+  run deploy security
+
+  assert $state equals 1
+  assert "$output" contains 'No hay servicios configurados'
+}
+
+# ─── Servicio desconocido ─────────────────────────────────────────────────────
+
+@test 'deploy con servicio inexistente reporta error y lista los disponibles' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base" "11:auth:security-base")
+
+  run deploy desconocido
+
+  assert $state equals 1
+  assert "$output" contains "El servicio 'desconocido' no está definido"
+  assert "$output" contains 'security'
+  assert "$output" contains 'auth'
+}
+
+# ─── DEPLOY_APPS faltante ─────────────────────────────────────────────────────
+
+@test 'deploy falla cuando el servicio existe pero DEPLOY_APPS está vacío' {
+  DEPLOY_SERVICES=("10:security:security-base")
+
+  run deploy security
+
+  assert $state equals 1
+  assert "$output" contains 'No hay aplicaciones configuradas'
+}
+
+@test 'deploy falla cuando la app del servicio no está en DEPLOY_APPS' {
+  DEPLOY_APPS=("1:otra-app")
+  DEPLOY_SERVICES=("10:security:security-base")
+
+  run deploy security
+
+  assert $state equals 1
+  assert "$output" contains "'security-base' del servicio 'security' no está definida"
+}
+
+# ─── Validación de --description ──────────────────────────────────────────────
+
+@test 'deploy --description sin valor falla con error específico' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+  DEPLOY_ENVIRONMENTS=("100:DEV:security-base")
+  DEPLOY_SERVER_URL='https://example.test'
+  DEPLOY_TOKEN='dummy'
+
+  run deploy security@1.0.0 --description
+
+  assert $state equals 1
+  assert "$output" contains '--description requiere un valor'
+}
+
+@test 'deploy --description seguida de otra flag también falla' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+  DEPLOY_ENVIRONMENTS=("100:DEV:security-base")
+  DEPLOY_SERVER_URL='https://example.test'
+
+  run deploy security@1.0.0 --description --dry-run
+
+  assert $state equals 1
+  assert "$output" contains '--description requiere un valor'
+}
+
+# ─── Flag desconocida ─────────────────────────────────────────────────────────
+
+@test 'deploy con flag desconocida falla con mensaje claro' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+
+  run deploy security --no-existe
+
+  assert $state equals 1
+  assert "$output" contains 'Parámetro desconocido: --no-existe'
+}
+
+# ─── DEPLOY_SERVER_URL faltante ───────────────────────────────────────────────
+
+@test 'deploy falla si DEPLOY_SERVER_URL no está configurado' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+
+  run deploy security@1.0.0
+
+  assert $state equals 1
+  assert "$output" contains 'DEPLOY_SERVER_URL no configurada'
+}
+
+# ─── Flujo dry-run completo ───────────────────────────────────────────────────
+
+@test 'deploy <service>@<version> --dry-run muestra payload por entorno sin ejecutar curl' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+  DEPLOY_ENVIRONMENTS=("100:DEV:security-base" "101:PRE:security-base" "102:PRO:security-base")
+  DEPLOY_SERVER_URL='https://example.test'
+  DEPLOY_TOKEN='dummy-token'
+
+  # validate_deploy_token usa turn_the_command para hacer curl; nuestro stub
+  # solo eval-a el `--command`. Sobrescribimos turn_the_command para imitar
+  # un token válido (escribe "200" al fichero pasado).
+  function turn_the_command() {
+    local cmd=""
+    while [[ $# -gt 0 ]]
+    do
+      case "$1" in
+        --command) cmd="$2"; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    # Detectar el endpoint de validación de token y simular HTTP 200.
+    if [[ "$cmd" == *deployment/new* && "$cmd" == *-o\ /dev/null* ]]
+    then
+      local tmp_match="${cmd##* > }"
+      print -n -- "200" > "${tmp_match}"
+    fi
+  }
+
+  run deploy security@1.2.3 --dry-run
+
+  assert $state equals 0
+  assert "$output" contains 'MODO DRY-RUN'
+  assert "$output" contains 'security-base'
+  assert "$output" contains 'security'
+  assert "$output" contains '1.2.3'
+  assert "$output" contains 'DEV'
+  assert "$output" contains 'PRE'
+  assert "$output" contains 'PRO'
+  assert "$output" contains 'Exitosos: 3'
+}
+
+@test 'deploy --description personaliza la descripción en el resumen' {
+  DEPLOY_APPS=("1:security-base")
+  DEPLOY_SERVICES=("10:security:security-base")
+  DEPLOY_ENVIRONMENTS=("100:DEV:security-base")
+  DEPLOY_SERVER_URL='https://example.test'
+  DEPLOY_TOKEN='dummy-token'
+
+  function turn_the_command() {
+    local cmd=""
+    while [[ $# -gt 0 ]]
+    do
+      case "$1" in --command) cmd="$2"; shift 2 ;; *) shift ;; esac
+    done
+    if [[ "$cmd" == *deployment/new* && "$cmd" == *-o\ /dev/null* ]]
+    then
+      local tmp_match="${cmd##* > }"
+      print -n -- "200" > "${tmp_match}"
+    fi
+  }
+
+  run deploy security@1.0.0 --dry-run --description 'Hotfix urgente'
+
+  assert $state equals 0
+  assert "$output" contains 'Hotfix urgente'
+}

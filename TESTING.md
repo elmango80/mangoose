@@ -40,13 +40,21 @@ zunit --verbose run                           # salida detallada
 ```
 tests/
 ├── _support/
-│   ├── bootstrap.zsh        # helper compartido (MANGOOSE_ROOT + mangoose_source)
-│   └── git_mock.zsh         # helpers `mock_git` / `git_porcelain` para tests de git
+│   ├── bootstrap.zsh        # MANGOOSE_ROOT + mangoose_source
+│   ├── git_mock.zsh         # mock_git / git_porcelain para gowt
+│   └── mocks.zsh            # stub_turn_the_command / stub_git_main_branch / stub_read_single_char
 ├── core/
 │   ├── print.zunit          # tests de msg + print_indentation (incl. regresión)
 │   └── utils.zunit          # tests de extract_arg_value
-└── git/
-    └── git_worktree_goto.zunit   # tests de gowt con git mockeado
+├── git/
+│   ├── is_git_repository.zunit
+│   ├── git_worktree_goto.zunit
+│   ├── no_branch_for_old_refs.zunit
+│   └── paranoid_sync.zunit
+├── productivity/
+│   └── seek_and_destroy.zunit
+└── deployment/
+    └── deploy.zunit
 ```
 
 El output transitorio de zunit se escribe en `tests/_output/` (gitignored).

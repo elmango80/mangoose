@@ -1,0 +1,202 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  load ../_support/mocks
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh git/git.zsh
+
+  stub_turn_the_command
+  stub_git_main_branch "master"
+  stub_read_single_char "n"
+}
+
+# ─── Ayuda y validación de argumentos ──────────────────────────────────────────
+
+@test 'no_branch_for_old_refs --help muestra ayuda y sale con 0' {
+  run no_branch_for_old_refs --help
+
+  assert $state equals 0
+  assert "$output" contains 'no_branch_for_old_refs'
+  assert "$output" contains 'USO:'
+  assert "$output" contains '--dry-run'
+  assert "$output" contains '--all'
+}
+
+@test 'no_branch_for_old_refs -h funciona igual que --help' {
+  run no_branch_for_old_refs -h
+
+  assert $state equals 0
+  assert "$output" contains 'USO:'
+}
+
+@test 'no_branch_for_old_refs rechaza argumentos desconocidos' {
+  run no_branch_for_old_refs --no-existe
+
+  assert $state equals 1
+  assert "$output" contains 'Argumento inesperado --no-existe'
+}
+
+# ─── Modo demo ────────────────────────────────────────────────────────────────
+
+@test 'no_branch_for_old_refs --demo muestra aviso de modo demo cuando es un repo' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-nbor-demo)
+  mkdir -p "${tmpdir}/.git"
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        case "$2" in
+          --show-current) print -- 'master' ;;
+          --no-color)     print -- '* master' ;;
+          --merged)       print -- '' ;;
+          *) return 0 ;;
+        esac
+        ;;
+      for-each-ref) print -- '' ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run no_branch_for_old_refs --demo
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'MODO DEMO'
+}
+
+# ─── --all sin repos ──────────────────────────────────────────────────────────
+
+@test 'no_branch_for_old_refs --all en directorio sin repos avisa y devuelve 0' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-nbor-all-empty)
+  mkdir -p "${tmpdir}/not_a_repo"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run no_branch_for_old_refs --all
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+}
+
+# ─── Caso "todo limpio" ───────────────────────────────────────────────────────
+
+@test 'no_branch_for_old_refs sin ramas obsoletas reporta "Todo limpio"' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-nbor-clean)
+  mkdir -p "${tmpdir}/.git"
+  # Solo existe la rama master, sin upstream gone ni mergeadas.
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        case "$2" in
+          --show-current) print -- 'master' ;;
+          --no-color)     print -- '* master' ;;
+          --merged)       print -- '' ;;
+          *) return 0 ;;
+        esac
+        ;;
+      for-each-ref) print -- '' ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run no_branch_for_old_refs
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'No hay ramas para eliminar'
+}
+
+# ─── Dry-run con ramas mergeadas ──────────────────────────────────────────────
+
+@test 'no_branch_for_old_refs --dry-run lista las ramas mergeadas sin borrarlas' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-nbor-dry)
+  mkdir -p "${tmpdir}/.git"
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        case "$2" in
+          --show-current) print -- 'master' ;;
+          --no-color)     printf '* master\n  feature/old\n' ;;
+          --merged)       printf '  feature/old\n' ;;
+          -D)             print -- "Deleted branch $3" ;;
+          *) return 0 ;;
+        esac
+        ;;
+      for-each-ref) print -- 'origin/feature/old' ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run no_branch_for_old_refs --dry-run
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'feature/old'
+  assert "$output" contains '(dry-run)'
+}
+
+# ─── Verbose ──────────────────────────────────────────────────────────────────
+
+@test 'no_branch_for_old_refs --verbose muestra clasificación completa cuando hay ramas a borrar' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-nbor-verbose)
+  mkdir -p "${tmpdir}/.git"
+  # Escenario con una rama mergeada (para que to_delete no esté vacío y se
+  # alcance la sección verbose) más una rama nunca publicada y una activa.
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        case "$2" in
+          --show-current) print -- 'master' ;;
+          --no-color)     printf '* master\n  feature/merged\n  feature/local-only\n  feature/keep\n' ;;
+          --merged)       printf '  feature/merged\n' ;;
+          *) return 0 ;;
+        esac
+        ;;
+      for-each-ref)
+        # Devolvemos el upstream según la rama solicitada (último argumento).
+        local ref="${@[-1]}"
+        case "$ref" in
+          *feature/local-only) print -- ' ' ;;                  # sin upstream → never_pushed
+          *feature/keep)       print -- 'origin/feature/keep ' ;; # upstream activo → kept
+          *)                   print -- '' ;;
+        esac
+        ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run no_branch_for_old_refs --verbose --dry-run
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  # En verbose se muestran las cuatro categorías.
+  assert "$output" contains 'mergeadas'
+  assert "$output" contains 'eliminadas del remoto'
+  assert "$output" contains 'nunca publicadas'
+  assert "$output" contains 'remoto activo'
+}

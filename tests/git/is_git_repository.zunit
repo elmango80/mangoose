@@ -1,0 +1,51 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh git/git.zsh
+}
+
+@test 'is_git_repository devuelve 0 cuando el directorio actual tiene .git' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-isgit-ok)
+  mkdir -p "${tmpdir}/.git"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run is_git_repository
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" is_empty
+}
+
+@test 'is_git_repository devuelve 1 cuando el directorio actual no es un repo' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-isgit-no)
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run is_git_repository
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 1
+  assert "$output" contains 'No se encontró un repositorio git'
+}
+
+@test 'is_git_repository incluye el path actual en el mensaje de error' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-isgit-path)
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  # Resolver symlinks para que coincida con lo que devuelve `pwd` dentro de la función.
+  local resolved_pwd="$(pwd)"
+  run is_git_repository
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 1
+  assert "$output" contains "$resolved_pwd"
+}
