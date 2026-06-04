@@ -74,9 +74,6 @@ alias gmomn='gmom --no-edit'
 alias gmn='gm --no-edit'
 alias gwtgt="git_worktree_goto"
 
-# Testing aliases
-alias t="zunit run"
-
 # Utility aliases
 alias goto="goto"
 alias deploy="deploy"
