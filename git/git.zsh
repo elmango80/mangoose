@@ -362,15 +362,15 @@ function no_branch_for_old_refs() {
     local failed=0
     for branch in "${to_delete[@]}"; do
       if [[ $demo_mode -eq 1 ]]; then
-        turn_the_command --command "sleep 0.25" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+        sleep 0.25
       else
-        turn_the_command --command "git branch -D \"$branch\"" --message "Eliminando rama ${RED}$branch${NC}" --no-newline
+        git branch -D "$branch" > /dev/null 2>&1
       fi
       if [[ $? -eq 0 ]]; then
-        msg "\r${GREEN}✓ Rama eliminada ${RED}$branch${NC} "
+        msg "${GREEN}✓ Rama eliminada ${RED}$branch${NC}"
         ((deleted++))
       else
-        msg "\r${RED}✗ Error al eliminar ${RED}$branch${NC} "
+        msg "${RED}✗ Error al eliminar ${RED}$branch${NC}"
         ((failed++))
       fi
     done
@@ -388,11 +388,11 @@ function no_branch_for_old_refs() {
         fi
 
         if [[ $demo_mode -eq 1 ]]; then
-          turn_the_command --command "sleep 0.25" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          sleep 0.25
         else
-          turn_the_command --command "git branch -D \"$current_branch\"" --message "Eliminando rama ${RED}$current_branch${NC}" --no-newline
+          git branch -D "$current_branch" > /dev/null 2>&1
         fi
-        msg "\r${GREEN}✓ Rama eliminada ${RED}$current_branch${NC} "
+        msg "${GREEN}✓ Rama eliminada ${RED}$current_branch${NC}"
         ((deleted++))
       fi
     fi
