@@ -29,16 +29,10 @@ Es idempotente: si ya están instalados, no hace nada.
 Desde la raíz del proyecto:
 
 ```zsh
-zunit run                              # toda la suite
-zunit run tests/core                   # solo el módulo core
+zunit run                                     # toda la suite
+zunit run tests/core                          # solo el módulo core
 zunit run tests/git/git_worktree_goto.zunit   # un fichero
-zunit --verbose run                    # salida detallada
-```
-
-También tienes el alias `t` (definido en `aliases/aliases.zsh`):
-
-```zsh
-t                                      # === zunit run
+zunit --verbose run                           # salida detallada
 ```
 
 ## Estructura
