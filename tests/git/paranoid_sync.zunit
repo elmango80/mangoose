@@ -1,0 +1,169 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  load ../_support/mocks
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh git/git.zsh
+
+  stub_turn_the_command
+  stub_git_main_branch "master"
+}
+
+# ─── Ayuda y validación de argumentos ──────────────────────────────────────────
+
+@test 'paranoid_sync --help muestra ayuda y sale con 0' {
+  run paranoid_sync --help
+
+  assert $state equals 0
+  assert "$output" contains 'paranoid_sync'
+  assert "$output" contains 'USO:'
+  assert "$output" contains '--all'
+}
+
+@test 'paranoid_sync -h funciona igual que --help' {
+  run paranoid_sync -h
+
+  assert $state equals 0
+  assert "$output" contains 'USO:'
+}
+
+@test 'paranoid_sync -a equivale a --all en el listado de ayuda' {
+  run paranoid_sync --help
+
+  assert "$output" contains '--all, -a'
+}
+
+@test 'paranoid_sync rechaza argumentos desconocidos' {
+  run paranoid_sync --no-existe
+
+  assert $state equals 1
+  assert "$output" contains 'Argumento inesperado --no-existe'
+}
+
+# ─── --all sin repositorios ────────────────────────────────────────────────────
+
+@test 'paranoid_sync --all en directorio vacío avisa y devuelve 0' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-psync-empty)
+  mkdir -p "${tmpdir}/not_a_repo"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run paranoid_sync --all
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'No se encontraron repositorios'
+}
+
+# ─── --all con repositorios ────────────────────────────────────────────────────
+
+@test 'paranoid_sync --all procesa todos los repos del directorio actual' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-psync-all)
+  mkdir -p "${tmpdir}/repo_a/.git"
+  mkdir -p "${tmpdir}/repo_b/.git"
+  mkdir -p "${tmpdir}/not_a_repo"
+
+  # Sin cambios remotos: el flujo se reduce a "Rama actualizada".
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      diff)  return 0 ;;  # sin cambios remotos
+      rev-parse) print -- "$PWD" ;;
+      branch)
+        [[ "$2" == "--show-current" ]] && print -- 'master'
+        ;;
+      status) print -- '' ;;
+      switch) return 0 ;;
+      stash) return 0 ;;
+      pull) return 0 ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run paranoid_sync --all
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'Todos los repositorios actualizados'
+}
+
+# ─── Flujo individual sin cambios remotos ──────────────────────────────────────
+
+@test 'paranoid_sync en repo sin cambios remotos reporta rama actualizada sin operaciones' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-psync-nochange)
+  mkdir -p "${tmpdir}/.git"
+
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      diff)  return 0 ;;  # sin cambios remotos → $has_remote_changes vacío
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        [[ "$2" == "--show-current" ]] && print -- 'master'
+        ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run paranoid_sync
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'Rama'
+  assert "$output" contains 'master'
+  assert "$output" contains 'actualizada'
+  # No debe imprimirse el detalle del flujo cuando no hay cambios remotos.
+  assert "$output" does_not_contain 'Guardando cambios sin confirmar'
+  assert "$output" does_not_contain 'Cambiando a la rama'
+}
+
+# ─── Flujo individual con cambios remotos y uncommitted ────────────────────────
+
+@test 'paranoid_sync con cambios remotos y rama distinta hace stash + switch + pull + restore' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-psync-fullflow)
+  mkdir -p "${tmpdir}/.git"
+
+  function git() {
+    case "$1" in
+      fetch) return 0 ;;
+      # `git diff X origin/X --quiet || echo "changes"` → forzamos exit != 0
+      # devolviendo 1 en `diff` para disparar el `|| echo "changes"`.
+      diff)  return 1 ;;
+      rev-parse) print -- "$tmpdir" ;;
+      branch)
+        [[ "$2" == "--show-current" ]] && print -- 'feature/foo'
+        ;;
+      # Hay cambios sin confirmar → activa el stash.
+      status) print -- ' M foo.txt' ;;
+      switch) return 0 ;;
+      stash)  return 0 ;;
+      pull)   return 0 ;;
+      *) return 0 ;;
+    esac
+  }
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run paranoid_sync
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'feature/foo'
+  assert "$output" contains 'Guardando cambios sin confirmar'
+  assert "$output" contains 'Cambiando a la rama'
+  assert "$output" contains 'Obteniendo cambios de la rama remota'
+  assert "$output" contains 'Restaurando cambios sin confirmar'
+  assert "$output" contains 'actualizada'
+}

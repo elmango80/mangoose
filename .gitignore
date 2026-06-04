@@ -20,3 +20,6 @@
 *.tmp
 
 standalone/
+
+# zunit test output
+tests/_output/

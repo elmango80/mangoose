@@ -1,0 +1,147 @@
+#!/usr/bin/env zunit
+
+@setup {
+  load ../_support/bootstrap
+  load ../_support/mocks
+  mangoose_source core/colors.zsh core/utils.zsh core/print.zsh productivity/productivity.zsh
+
+  # Reemplazar el spinner real por un stub que ejecuta el comando capturado.
+  stub_turn_the_command
+}
+
+# ─── Parser de argumentos ──────────────────────────────────────────────────────
+
+@test 'seek_and_destroy rechaza argumentos inesperados' {
+  run seek_and_destroy --dir node_modules basura_extra
+
+  assert $state equals 1
+  assert "$output" contains 'Unexpected value basura_extra'
+}
+
+# ─── Caso "no hay nada que borrar" ─────────────────────────────────────────────
+
+@test 'seek_and_destroy devuelve 0 sin imprimir nada cuando no encuentra el directorio' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-empty)
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir noexiste --no-confirm
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" is_empty
+}
+
+@test 'seek_and_destroy --verbose informa cuando no encuentra el directorio' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-verbose-empty)
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir noexiste --no-confirm --verbose
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains "No such 'noexiste' directory"
+}
+
+# ─── Borrado real (en sandbox) ─────────────────────────────────────────────────
+
+@test 'seek_and_destroy --no-confirm borra los directorios encontrados' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-delete)
+  mkdir -p "${tmpdir}/proj1/node_modules"
+  mkdir -p "${tmpdir}/proj2/node_modules"
+  mkdir -p "${tmpdir}/proj3/src"
+  touch "${tmpdir}/proj1/node_modules/marker"
+  touch "${tmpdir}/proj2/node_modules/marker"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir node_modules --no-confirm
+  cd "$start_pwd"
+
+  local p1_exists=0 p2_exists=0 p3_exists=0
+  [[ -d "${tmpdir}/proj1/node_modules" ]] && p1_exists=1
+  [[ -d "${tmpdir}/proj2/node_modules" ]] && p2_exists=1
+  [[ -d "${tmpdir}/proj3/src" ]] && p3_exists=1
+
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert $p1_exists equals 0
+  assert $p2_exists equals 0
+  # No debe tocar otros directorios.
+  assert $p3_exists equals 1
+}
+
+@test 'seek_and_destroy respeta maxdepth=2 y NO borra directorios anidados más profundos' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-depth)
+  # depth 1: ./node_modules        (debe borrarse)
+  # depth 2: ./proj/node_modules   (debe borrarse)
+  # depth 3: ./a/b/node_modules    (NO debe borrarse — supera maxdepth 2)
+  mkdir -p "${tmpdir}/node_modules"
+  mkdir -p "${tmpdir}/proj/node_modules"
+  mkdir -p "${tmpdir}/a/b/node_modules"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir node_modules --no-confirm
+  cd "$start_pwd"
+
+  local d1=0 d2=0 d3=0
+  [[ -d "${tmpdir}/node_modules" ]]      && d1=1
+  [[ -d "${tmpdir}/proj/node_modules" ]] && d2=1
+  [[ -d "${tmpdir}/a/b/node_modules" ]]  && d3=1
+
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert $d1 equals 0
+  assert $d2 equals 0
+  assert $d3 equals 1
+}
+
+# ─── Output verbose ────────────────────────────────────────────────────────────
+
+@test 'seek_and_destroy --verbose lista los directorios encontrados' {
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-verbose-list)
+  mkdir -p "${tmpdir}/proj1/dist"
+  mkdir -p "${tmpdir}/proj2/dist"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir dist --no-confirm --verbose
+  cd "$start_pwd"
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert "$output" contains 'proj1/dist'
+  assert "$output" contains 'proj2/dist'
+}
+
+# ─── Cancelación por confirmación ──────────────────────────────────────────────
+
+@test 'seek_and_destroy NO borra cuando el usuario responde "n"' {
+  stub_read_single_char "n"
+  local tmpdir
+  tmpdir=$(mktemp -d -t mangoose-sad-cancel)
+  mkdir -p "${tmpdir}/proj/node_modules"
+
+  local start_pwd="$PWD"
+  cd "$tmpdir"
+  run seek_and_destroy --dir node_modules
+  cd "$start_pwd"
+
+  local kept=0
+  [[ -d "${tmpdir}/proj/node_modules" ]] && kept=1
+  rm -rf "$tmpdir"
+
+  assert $state equals 0
+  assert $kept equals 1
+}

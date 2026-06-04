@@ -66,9 +66,7 @@ alias sad:all="sad:node_modules --no-confirm && sad:dist --no-confirm && sad:yal
 
 # Git aliases
 alias gcls="no_branch_for_old_refs"
-alias gcls:all="no_branch_for_old_refs --all"
 alias gmup="paranoid_sync"
-alias gmup:all="paranoid_sync --all"
 alias gce="git commit --allow-empty -m 'empty commit'"
 alias gmomn='gmom --no-edit'
 alias gmn='gm --no-edit'
