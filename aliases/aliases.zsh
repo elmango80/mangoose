@@ -72,7 +72,7 @@ alias gmup:all="paranoid_sync --all"
 alias gce="git commit --allow-empty -m 'empty commit'"
 alias gmomn='gmom --no-edit'
 alias gmn='gm --no-edit'
-alias gowt="git_worktree_goto"
+alias gwtgt="git_worktree_goto"
 
 # Utility aliases
 alias goto="goto"

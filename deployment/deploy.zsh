@@ -75,12 +75,12 @@ function deploy() {
     msg "  deploy --help                                              # Muestra esta ayuda"
     msg --blank
     msg "Autenticación:"
-    msg "  Los tokens se almacenan en .env y se reutilizan automáticamente."
-    msg "  Solo se solicitan nuevos tokens si los almacenados han expirado."
-    msg "  Para obtener tokens manualmente:"
-    msg "    1. Inicia sesión en Quicksilver"
-    msg "    2. Abre DevTools (Cmd+Option+I) > Application > Cookies"
-    msg "    3. Copia 'csrftoken' y 'sessionid'"
+    msg "  El API token se almacena en .env y se reutiliza automáticamente."
+    msg "  Solo se solicita un nuevo token si el almacenado ha expirado."
+    msg "  Para obtener un token manualmente:"
+    msg "    1. Abre ${DEPLOY_SERVER_URL}/user-profile/"
+    msg "    2. Genera (o copia) tu API token personal"
+    msg "    3. Guárdalo en DEPLOY_TOKEN dentro de .env"
   }
   
   # Función interna para listar servicios
@@ -248,17 +248,17 @@ function deploy() {
     return 1
   fi
   
-  local CSRF_TOKEN=""
-  local SESSION_ID=""
+  local TOKEN=""
 
-  # Función interna para validar tokens contra Quicksilver
-  validate_deploy_tokens() {
+  # Función interna para validar el API token contra Quicksilver.
+  # Usamos /cd/api/deployment/new (GET) porque es el mismo endpoint que la app
+  # ods-dcw-ui usa para validar el Bearer token y devuelve 200 si es válido.
+  validate_deploy_token() {
     local token="$1"
-    local session="$2"
     local tmp_file=$(mktemp)
     turn_the_command \
       --message "Verificando credenciales" \
-      --command "curl -s -o /dev/null -w '%{http_code}' '${DEPLOY_SERVER_URL}/cd/react-api/check-auth-status/' -H 'accept: application/json, text/plain, */*' -b 'csrftoken=$token; sessionid=$session' > $tmp_file" > /dev/null
+      --command "curl -s -o /dev/null -w '%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/deployment/new' -H 'accept: application/json' -H 'Authorization: Bearer $token' > $tmp_file" > /dev/null
     local result=$(cat "$tmp_file")
     rm -f "$tmp_file"
     [[ "$result" == "200" ]]
@@ -280,48 +280,34 @@ function deploy() {
     fi
   }
 
-  # Función interna para solicitar tokens al usuario
-  prompt_deploy_tokens() {
-    local quicksilver_url="${DEPLOY_SERVER_URL}/login/?next=/cd/react-api/check-auth-status/"
-    msg "Pasos para obtener tus tokens:" --dim
+  # Función interna para solicitar el API token al usuario
+  prompt_deploy_token() {
+    local profile_url="${DEPLOY_SERVER_URL}/user-profile/"
+    msg "Pasos para obtener tu API token:" --dim
     msg "1. Inicia sesión con tus credenciales de Santander" --dim --tab 1
-    msg "2. Una vez autenticado, abre las DevTools (Cmd+Option+I)" --dim --tab 1
-    msg "3. Ve a la pestaña 'Application' > 'Cookies'" --dim --tab 1
-    msg "4. Busca y copia estos valores:" --dim --tab 1
-    msg "   • csrftoken" --dim --tab 2
-    msg "   • sessionid" --dim --tab 2
+    msg "2. Genera (o copia) tu API token personal en la sección de tokens" --dim --tab 1
     msg --blank
-    
-    open "$quicksilver_url"
 
-    msg "Token: " --no-newline
-    read CSRF_TOKEN
-    
-    msg "ID de la sesión: " --no-newline
-    read SESSION_ID
+    open "$profile_url"
 
-    if [[ -z "$CSRF_TOKEN" ]] || [[ -z "$SESSION_ID" ]]; then
-      msg "Error: Debes proporcionar ambos datos" --error
+    msg "API Token: " --no-newline
+    read TOKEN
+
+    if [[ -z "$TOKEN" ]]; then
+      msg "Error: Debes proporcionar el token" --error
       return 1
     fi
   }
 
-  # Intentar usar tokens almacenados en .env (no necesario en dry-run)
-  if [[ "$DRY_RUN" == false ]]; then
-    if [[ -n "$DEPLOY_CSRF_TOKEN" ]] && [[ -n "$DEPLOY_SESSION_ID" ]]; then
-      if validate_deploy_tokens "$DEPLOY_CSRF_TOKEN" "$DEPLOY_SESSION_ID"; then
-        CSRF_TOKEN="$DEPLOY_CSRF_TOKEN"
-        SESSION_ID="$DEPLOY_SESSION_ID"
-      else
-        prompt_deploy_tokens || return 1
-        update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
-        update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
-      fi
-    else
-      prompt_deploy_tokens || return 1
-      update_env_token "DEPLOY_CSRF_TOKEN" "$CSRF_TOKEN"
-      update_env_token "DEPLOY_SESSION_ID" "$SESSION_ID"
-    fi
+  # Resolver el token siempre: incluso en dry-run necesitamos llamar a
+  # /cd/api/versions/... para listar versiones disponibles. Si el token
+  # almacenado es válido se reutiliza; si no, se solicita uno nuevo y se
+  # persiste en .env (mismo flujo que un deploy real).
+  if [[ -n "$DEPLOY_TOKEN" ]] && validate_deploy_token "$DEPLOY_TOKEN"; then
+    TOKEN="$DEPLOY_TOKEN"
+  else
+    prompt_deploy_token || return 1
+    update_env_token "DEPLOY_TOKEN" "$TOKEN"
   fi
 
   # Verificar que DEPLOY_ENVIRONMENTS esté configurado
@@ -374,7 +360,7 @@ function deploy() {
         -H 'accept: application/json, text/plain, */*' \
         -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
         -H 'priority: u=1, i' \
-        -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' > $versions_tmp" > /dev/null
+        -H 'Authorization: Bearer $TOKEN' > $versions_tmp" > /dev/null
     local VERSIONS_RESPONSE=$(cat "$versions_tmp")
     rm -f "$versions_tmp"
 
@@ -389,9 +375,9 @@ function deploy() {
       msg "Verifica que estas conectado a la VPN y que el servidor esta accesible" --dim
       return 1
     elif [ "$VERSIONS_HTTP_STATUS" = "401" ] || [ "$VERSIONS_HTTP_STATUS" = "403" ]; then
-      msg "Token CSRF inválido o expirado" --error
+      msg "API token inválido o expirado" --error
       msg "El token de autenticación ha expirado o es inválido." --dim
-      msg "Por favor, obtén un nuevo token CSRF y actualiza el script." --dim
+      msg "Obtén uno nuevo en ${DEPLOY_SERVER_URL}/user-profile/ y actualiza DEPLOY_TOKEN en .env." --dim
       return 1
     elif [ "$VERSIONS_HTTP_STATUS" != "200" ]; then
       msg "Error al obtener versiones disponibles" --error
@@ -460,15 +446,12 @@ function deploy() {
       # Modo normal: ejecutar el deployment real
       local RESPONSE=$(turn_the_command \
         --message "Desplegando en $ENV_NAME" \
-        --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/deployment/new' \
+        --command "curl -s -w '\nHTTP_STATUS:%{http_code}' -X POST '${DEPLOY_SERVER_URL}/cd/api/deployment/new' \
           -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
           -H 'accept: application/json, text/plain, */*' \
           -H 'content-type: application/json' \
-          -H 'origin: ${DEPLOY_SERVER_URL}' \
           -H 'priority: u=1, i' \
-          -H 'referer: ${DEPLOY_SERVER_URL}/deployment/new' \
-          -H 'x-csrftoken: $CSRF_TOKEN' \
-          -b 'csrftoken=$CSRF_TOKEN; sessionid=$SESSION_ID' \
+          -H 'Authorization: Bearer $TOKEN' \
           --data-raw '{\"application\":${APP_ID},\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
       
       # Extraer el código HTTP
@@ -489,9 +472,9 @@ function deploy() {
         # Detectar errores específicos
         if [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
           ABORT_DEPLOY=true
-          msg "Token CSRF inválido o expirado" --error
+          msg "API token inválido o expirado" --error
           msg "El token de autenticación ha expirado o es inválido." --dim
-          msg "Por favor, obtén un nuevo token CSRF y actualiza el script." --dim
+          msg "Obtén uno nuevo en ${DEPLOY_SERVER_URL}/user-profile/ y actualiza DEPLOY_TOKEN en .env." --dim
           break
         else
           msg "Error en deployment en $ENV_NAME" --error

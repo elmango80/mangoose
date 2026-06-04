@@ -100,25 +100,22 @@ deploy users@2.0.0 --description "Release Q4" --dry-run
 
 ## Autenticación
 
-Requiere tokens de autenticación:
+Requiere un **API token personal de Quicksilver** que se envía como `Authorization: Bearer <token>`.
 
-- **CSRF Token** - Token de seguridad del servidor
-- **Session ID** - ID de sesión del usuario
+**Gestión automática del token:**
 
-**Gestión automática de tokens:**
+El token se almacena en el archivo `.env` (`DEPLOY_TOKEN`) y se reutiliza automáticamente entre deploys. El flujo es:
 
-Los tokens se almacenan en el archivo `.env` (`DEPLOY_CSRF_TOKEN` y `DEPLOY_SESSION_ID`) y se reutilizan automáticamente entre deploys. El flujo es:
+1. Si hay un token almacenado → se valida contra Quicksilver
+2. Si es válido → se usa directamente (sin intervención del usuario)
+3. Si es inválido o no existe → se solicita uno nuevo y se guarda en `.env`
 
-1. Si hay tokens almacenados → se validan contra Quicksilver
-2. Si son válidos → se usan directamente (sin intervención del usuario)
-3. Si son inválidos o no existen → se solicitan nuevos y se guardan en `.env`
+**Obtención manual del token (solo cuando se solicita):**
 
-**Obtención manual de tokens (solo cuando se solicitan):**
-
-1. Se abre Quicksilver automáticamente en el navegador
-2. Inicia sesión con tus credenciales
-3. DevTools → Application → Cookies
-4. Copia `csrftoken` y `sessionid`
+1. Se abre `${DEPLOY_SERVER_URL}/user-profile/` automáticamente en el navegador
+2. Inicia sesión con tus credenciales de Santander
+3. Genera (o copia) tu API token personal
+4. Pégalo cuando el script lo pida
 
 ## Manejo de Errores
 
@@ -143,8 +140,7 @@ Deben configurarse en tu archivo `.env`:
 - `DEPLOY_APPS` - Array de aplicaciones (formato: `"id_app:nombre_app"`)
 - `DEPLOY_SERVICES` - Array de servicios disponibles (formato: `"id:nombre:nombre_app"`)
 - `DEPLOY_ENVIRONMENTS` - Array de entornos de deployment (formato: `"id:nombre:nombre_app"`)
-- `DEPLOY_CSRF_TOKEN` - Token CSRF (se actualiza automáticamente)
-- `DEPLOY_SESSION_ID` - ID de sesión (se actualiza automáticamente)
+- `DEPLOY_TOKEN` - API token personal de Quicksilver (se actualiza automáticamente)
 
 ## Uso
 
