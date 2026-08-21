@@ -94,6 +94,12 @@ code ~/.config/zsh/mangoose/.env
 
 #### 🔧 Variables Disponibles
 
+##### Productivity
+
+| Variable          | Descripción                                                     | Ejemplo |
+| ----------------- | --------------------------------------------------------------- | ------- |
+| `PACKAGE_MANAGER` | Gestor usado por las funciones Node.js (`pnpm`, `npm` o `yarn`) | `pnpm`  |
+
 ##### Deployment
 
 | Variable              | Descripción                                                       | Ejemplo                                    |

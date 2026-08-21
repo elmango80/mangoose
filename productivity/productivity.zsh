@@ -155,6 +155,7 @@ function goto() {
 
 function phoenix() {
   local hard_mode=0
+  local package_manager="${PACKAGE_MANAGER:-pnpm}"
 
   # Función interna para mostrar ayuda
   show_help() {
@@ -162,13 +163,13 @@ function phoenix() {
     msg "Reinicia completamente un proyecto Node.js eliminando dependencias y reconstruyendo."
     msg --blank
     msg "Opciones:"
-    msg "  --hard                      Modo agresivo: elimina también yarn.lock, caché y enlaces yalc"
+    msg "  --hard                      Modo agresivo: elimina también el lockfile, la caché y los enlaces yalc"
     msg "  -h, --help                  Muestra esta ayuda"
     msg --blank
     msg "Descripción:"
     msg "  Elimina node_modules, dist, y .yalc, luego reinstala las dependencias."
-    msg "  En modo --hard también elimina yarn.lock, limpia la caché de yarn y"
-    msg "  remueve todos los enlaces de yalc."
+    msg "  En modo --hard también elimina el lockfile y limpia la caché de $package_manager"
+    msg "  además de remover todos los enlaces de yalc."
     msg --blank
     msg "Ejemplos:"
     msg "  phoenix                     # Limpieza estándar"
@@ -204,6 +205,21 @@ function phoenix() {
     shift
   done
 
+  case "$package_manager" in
+    pnpm|npm|yarn)
+      ;;
+    *)
+      msg "Unsupported package manager '$package_manager'. Use pnpm, npm or yarn." --error
+      return 1
+      ;;
+  esac
+
+  if ! command -v "$package_manager" >/dev/null 2>&1
+  then
+    msg "Package manager '$package_manager' was not found in PATH." --error
+    return 1
+  fi
+
   if [[ ! -f "package.json" ]]
   then
     msg "The package.json file was not found in the current folder." --error
@@ -222,17 +238,28 @@ function phoenix() {
   seek_and_destroy --dir dist --no-confirm
   seek_and_destroy --dir .yalc --no-confirm
   
-  # Si está en modo hard, limpiar también la caché de yarn
+  # Si está en modo hard, limpiar también la caché del gestor seleccionado
   if [[ $hard_mode -eq 1 ]]; then
     msg "Removing all linked projects" --warning
     yalc remove --all
-    msg "Cleaning yarn cache" --warning
-    yarn cache clean
-    msg "Deleting yarn.lock" --warning
-    rm -f yarn.lock
+    msg "Cleaning $package_manager cache" --warning
+    case "$package_manager" in
+      pnpm)
+        pnpm store prune
+        rm -f pnpm-lock.yaml
+        ;;
+      npm)
+        npm cache clean --force
+        rm -f package-lock.json
+        ;;
+      yarn)
+        yarn cache clean
+        rm -f yarn.lock
+        ;;
+    esac
   fi
   
-  yarn install
+  "$package_manager" install
 
   msg "${RGB_SUNSET}🔥  The phoenix has been reborn${NC}"
 }

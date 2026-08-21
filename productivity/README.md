@@ -54,17 +54,26 @@ phoenix              # Limpieza estándar
 phoenix --hard       # Limpieza agresiva completa
 ```
 
+**Configuración:**
+
+El gestor de paquetes se configura mediante `PACKAGE_MANAGER` en `.env`.
+Admite `pnpm`, `npm` y `yarn`; si no se define, usa `pnpm`.
+
+```zsh
+export PACKAGE_MANAGER="pnpm"
+```
+
 **Modo estándar:**
 
 - Elimina node_modules, dist, .yalc
-- Ejecuta yarn install
+- Ejecuta `<gestor> install`
 
 **Modo --hard:**
 
 - Todo lo anterior +
 - Remueve enlaces yalc
-- Limpia caché de yarn
-- Elimina yarn.lock
+- Limpia la caché del gestor seleccionado
+- Elimina el lockfile del gestor seleccionado
 
 ## Dependencias
 
@@ -77,7 +86,7 @@ Requiere:
 
 Herramientas externas:
 
-- Node.js y Yarn (para phoenix)
+- Node.js y pnpm, npm o Yarn (para phoenix)
 - find (para goto y seek_and_destroy)
 
 ## Uso
