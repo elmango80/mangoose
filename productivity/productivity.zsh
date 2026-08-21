@@ -156,6 +156,7 @@ function goto() {
 function phoenix() {
   local hard_mode=0
   local package_manager="${PACKAGE_MANAGER:-pnpm}"
+  local project_properties_file="../.ci/properties.env"
 
   # Función interna para mostrar ayuda
   show_help() {
@@ -204,6 +205,12 @@ function phoenix() {
     esac
     shift
   done
+
+  if [[ -f "$project_properties_file" ]]; then
+    local project_package_manager
+    project_package_manager=$(unset PACKAGE_MANAGER; source "$project_properties_file" && print -r -- "$PACKAGE_MANAGER")
+    [[ -n "$project_package_manager" ]] && package_manager="$project_package_manager"
+  fi
 
   case "$package_manager" in
     pnpm|npm|yarn)

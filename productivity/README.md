@@ -56,12 +56,16 @@ phoenix --hard       # Limpieza agresiva completa
 
 **Configuración:**
 
-El gestor de paquetes se configura mediante `PACKAGE_MANAGER` en `.env`.
+El gestor de paquetes por defecto se configura mediante `PACKAGE_MANAGER` en el `.env` de Mangoose.
 Admite `pnpm`, `npm` y `yarn`; si no se define, usa `pnpm`.
 
 ```zsh
 export PACKAGE_MANAGER="pnpm"
 ```
+
+Si el proyecto tiene la estructura `./.ci` y `./app`, y `phoenix` se ejecuta desde
+`app`, se usa `PACKAGE_MANAGER` desde `../.ci/properties.env` cuando está definido.
+Ese valor tiene prioridad sobre el valor configurado en Mangoose.
 
 **Modo estándar:**
 
