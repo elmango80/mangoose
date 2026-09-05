@@ -79,6 +79,18 @@ Ese valor tiene prioridad sobre el valor configurado en Mangoose.
 - Limpia la caché del gestor seleccionado
 - Elimina el lockfile del gestor seleccionado
 
+### Scripts del proyecto
+
+Estos comandos ejecutan los scripts usando el gestor configurado por el proyecto:
+
+```zsh
+run:dev
+run:start
+run:start:cc
+run:start:unlinked
+run:start:unlinked:cc
+```
+
 ## Dependencias
 
 Requiere:

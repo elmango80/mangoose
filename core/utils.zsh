@@ -49,6 +49,32 @@ function zre() {
   fi
 }
 
+function package_manager_for_project() {
+  local package_manager="${PACKAGE_MANAGER:-pnpm}"
+  local project_properties_file="../.ci/properties.env"
+
+  if [[ -f "$project_properties_file" ]]; then
+    local project_package_manager
+    project_package_manager=$(unset PACKAGE_MANAGER; source "$project_properties_file" && print -r -- "$PACKAGE_MANAGER") || return 1
+    [[ -n "$project_package_manager" ]] && package_manager="$project_package_manager"
+  fi
+
+  print -r -- "$package_manager"
+}
+
+function package_manager_run() {
+  local package_manager
+  package_manager=$(package_manager_for_project) || return 1
+
+  if ! command -v "$package_manager" >/dev/null 2>&1
+  then
+    print -u2 "Package manager '$package_manager' was not found in PATH."
+    return 1
+  fi
+
+  "$package_manager" run "$@"
+}
+
 # Función de selector interactivo con flechas
 # Uso: select_option "opción1" "opción2" "opción3"
 # Retorna: índice seleccionado (1-based)

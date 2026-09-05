@@ -157,6 +157,29 @@ zconfig: no such file: ~/.zshrc
 - `0` si el archivo se recargó correctamente
 - `1` si el archivo no existe o hubo error
 
+## 📦 package_manager_for_project y package_manager_run
+
+Resuelven el gestor de paquetes del proyecto y ejecutan scripts usando ese gestor.
+
+La prioridad de configuración es:
+
+1. `PACKAGE_MANAGER` definido en `../.ci/properties.env`.
+2. `PACKAGE_MANAGER` del entorno de Mangoose.
+3. `pnpm` como valor por defecto.
+
+### Uso
+
+```zsh
+package_manager_for_project
+package_manager_run dev:nodemon
+```
+
+`package_manager_run` ejecuta el script con el formato común:
+
+```text
+<gestor> run <script>
+```
+
 ## 🎯 select_option
 
 Selector interactivo de opciones con navegación por flechas.

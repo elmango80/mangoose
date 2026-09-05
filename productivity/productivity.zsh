@@ -156,7 +156,6 @@ function goto() {
 function phoenix() {
   local hard_mode=0
   local package_manager="${PACKAGE_MANAGER:-pnpm}"
-  local project_properties_file="../.ci/properties.env"
 
   # Función interna para mostrar ayuda
   show_help() {
@@ -206,11 +205,7 @@ function phoenix() {
     shift
   done
 
-  if [[ -f "$project_properties_file" ]]; then
-    local project_package_manager
-    project_package_manager=$(unset PACKAGE_MANAGER; source "$project_properties_file" && print -r -- "$PACKAGE_MANAGER")
-    [[ -n "$project_package_manager" ]] && package_manager="$project_package_manager"
-  fi
+  package_manager=$(package_manager_for_project) || return 1
 
   case "$package_manager" in
     pnpm|npm|yarn)
@@ -269,4 +264,24 @@ function phoenix() {
   "$package_manager" install
 
   msg "${RGB_SUNSET}🔥  The phoenix has been reborn${NC}"
+}
+
+function run:dev() {
+  package_manager_run dev
+}
+
+function run:start() {
+  package_manager_run start
+}
+
+function run:start:cc() {
+  package_manager_run start:cc
+}
+
+function run:start:unlinked() {
+  package_manager_run start:unlinked
+}
+
+function run:start:unlinked:cc() {
+  package_manager_run start:unlinked:cc
 }

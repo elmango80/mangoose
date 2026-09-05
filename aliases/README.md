@@ -79,9 +79,6 @@ example          # cd example
 transfers:base   # Navegar a transfers base
 transfers:example # Navegar a example
 run:base         # Ejecutar base
-run:dev          # yarn dev:nodemon
-run:start        # yarn start
-run:start:cc     # yarn start:cc
 run:wiremock     # Servidor WireMock
 npm:jfrog        # npm login jfrog
 ```
