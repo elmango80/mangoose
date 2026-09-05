@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "computedHash": "b58d55b64742ecd37923985ec7bdfbe678ffbcb9895562abd28c0a32dcacd7fb"
+    },
+    "design-doc-mermaid": {
+      "source": "spillwavesolutions/design-doc-mermaid",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "379bb1b77bba960f4629114254cd68ca84618044de61c4c4f363801f2c6f0fe1"
+    },
+    "execute-plan": {
+      "source": "buiducnhat/cobrew",
+      "sourceType": "github",
+      "skillPath": "plugins/cobrew/skills/execute-plan/SKILL.md",
+      "computedHash": "edcd8b5ffd1c4cb2fc93c1ea6037aea902c70ca49625567f9e46e840e377efc3"
+    },
+    "git-commit": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/git-commit/SKILL.md",
+      "computedHash": "2607fc60629b82b257136dd2a7a373f0a4466c0b49df7746d845d59313c99b21"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/systematic-debugging/SKILL.md",
+      "computedHash": "a2750dfbaed1690da73b120254892c4f926b4576cb82eb16fc877783941fe39b"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-plans/SKILL.md",
+      "computedHash": "27c75044e444a4fc68798c3f799dc23eaff3a6bfabff32e6ad75bb20f881c094"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-skills/SKILL.md",
+      "computedHash": "e5dfc1a942f56dc757421b0d87ae1f38ab693ebc71138e65268fd408bb5c93d3"
+    }
+  }
+}
