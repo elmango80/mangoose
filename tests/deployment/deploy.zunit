@@ -7,9 +7,104 @@
 
   stub_turn_the_command
 
+  function stub_versions_api() {
+    DEPLOY_APPS=("1:shareholders-base")
+    DEPLOY_SERVICES=("4506:shareholders:shareholders-base")
+    DEPLOY_ENVIRONMENTS=("999:OTHER:another-app" "1858:DEV:shareholders-base")
+    DEPLOY_SERVER_URL='https://example.test'
+    DEPLOY_TOKEN='dummy-token'
+
+    function curl() {
+      local arg
+      for arg in "$@"; do
+        case "$arg" in
+          -o) print -n -- '200:application/json'; return ;;
+          'https://example.test/api/v1/resources/service/4506/versions?environment=1858')
+            print -r -- "$versions_fixture"
+            print -- 'HTTP_STATUS:200'
+            return
+            ;;
+        esac
+      done
+      print -- '<!doctype html><html></html>\nHTTP_STATUS:200'
+    }
+    function open() { return 1; }
+    function sleep() { :; }
+    function select_option() {
+      printf '%s\n' "$@"
+      return 1
+    }
+  }
+
+  requests_file=""
+
+  function stub_deployment_api() {
+    DEPLOY_APPS=("138:ods-pri")
+    DEPLOY_SERVICES=("4506:shareholders:ods-pri")
+    DEPLOY_ENVIRONMENTS=("1858:Development:ods-pri" "1891:Quality Assurance:ods-pri")
+    DEPLOY_SERVER_URL='https://example.test'
+    DEPLOY_TOKEN='dummy-token'
+    requests_file=$(mktemp)
+    context_body='{"next":"launch","context":{"environment_full_name":"ods-qa-mc","application_name":"ODS-pri","service_name":"ui-shareholders"}}'
+    launch_body='{"id":930157,"status":"RUNNING","aws_ref":"example-execution"}'
+    context_status=200
+    launch_status=201
+    request_exit=0
+    validation_type='application/json'
+
+    function curl() {
+      local method=GET url="" payload="" format="" discard=false
+      while (( $# )); do
+        case "$1" in
+          -X) method="$2"; shift 2 ;;
+          --data-raw) payload="$2"; shift 2 ;;
+          -w) format="$2"; shift 2 ;;
+          -o) discard=true; shift 2 ;;
+          -H) shift 2 ;;
+          https://*) url="$1"; shift ;;
+          *) shift ;;
+        esac
+      done
+      jq -cn --arg method "$method" --arg url "$url" --arg data "$payload" \
+        '{method:$method,url:$url,payload:(if $data == "" then null else ($data | fromjson) end)}' >> "$requests_file" || return 1
+      if [[ "$discard" == true ]]; then
+        if [[ "$format" == *content_type* ]]; then
+          print -n -- "200:$validation_type"
+        else
+          print -n -- '200'
+        fi
+        return
+      fi
+      case "$url" in
+        */api/v1/resources/deployment/context)
+          print -r -- "$context_body"
+          print -- "HTTP_STATUS:$context_status"
+          return "$request_exit"
+          ;;
+        */api/v1/resources/deployment/launch)
+          if [[ "$payload" == *'"environment_id":1891'* && "${fail_qa:-false}" == true ]]; then
+            print -- '{"detail":"launch failed"}\nHTTP_STATUS:500'
+          else
+            print -r -- "$launch_body"
+            print -- "HTTP_STATUS:$launch_status"
+          fi
+          ;;
+        *) print -- '<!doctype html><html></html>\nHTTP_STATUS:405' ;;
+      esac
+    }
+    function open() { return 1; }
+    function sleep() { :; }
+  }
+
   # Asegurar que ninguna variable global del .env del usuario contamine los
   # tests: cada test que las necesite las define explícitamente.
   unset DEPLOY_SERVICES DEPLOY_APPS DEPLOY_ENVIRONMENTS DEPLOY_SERVER_URL DEPLOY_TOKEN
+}
+
+@teardown {
+  if [[ -n "$requests_file" && -f "$requests_file" ]]; then
+    rm -f "$requests_file"
+  fi
 }
 
 # ─── --help / -h ──────────────────────────────────────────────────────────────
@@ -172,7 +267,7 @@
 
 # ─── Flujo dry-run completo ───────────────────────────────────────────────────
 
-@test 'deploy <service>@<version> --dry-run muestra payload por entorno sin ejecutar curl' {
+@test 'deploy <service>@<version> --dry-run muestra resumen por entorno sin ejecutar curl' {
   DEPLOY_APPS=("1:security-base")
   DEPLOY_SERVICES=("10:security:security-base")
   DEPLOY_ENVIRONMENTS=("100:DEV:security-base" "101:PRE:security-base" "102:PRO:security-base")
@@ -192,10 +287,10 @@
       esac
     done
     # Detectar el endpoint de validación de token y simular HTTP 200.
-    if [[ "$cmd" == *deployment/new* && "$cmd" == *-o\ /dev/null* ]]
+    if [[ "$cmd" == */api/v1/resources/service/* && "$cmd" == *-o\ /dev/null* ]]
     then
       local tmp_match="${cmd##* > }"
-      print -n -- "200" > "${tmp_match}"
+      print -n -- "200:application/json" > "${tmp_match}"
     fi
   }
 
@@ -225,10 +320,10 @@
     do
       case "$1" in --command) cmd="$2"; shift 2 ;; *) shift ;; esac
     done
-    if [[ "$cmd" == *deployment/new* && "$cmd" == *-o\ /dev/null* ]]
+    if [[ "$cmd" == */api/v1/resources/service/* && "$cmd" == *-o\ /dev/null* ]]
     then
       local tmp_match="${cmd##* > }"
-      print -n -- "200" > "${tmp_match}"
+      print -n -- "200:application/json" > "${tmp_match}"
     fi
   }
 
@@ -236,4 +331,258 @@
 
   assert $state equals 0
   assert "$output" contains 'Hotfix urgente'
+}
+
+@test 'deploy consulta versiones en la API v1 con el entorno de la aplicación' {
+  stub_versions_api
+  versions_fixture='{"versions":["0.6.2+l3-inside-bases.144","0.6.2"]}'
+
+  run deploy shareholders --dry-run
+
+  assert $state equals 0
+  assert "$output" contains 'Versión seleccionada: 0.6.2+l3-inside-bases.144'
+  assert "$output" contains 'Exitosos: 1'
+}
+
+@test 'deploy avisa sin volcar la respuesta cuando no hay versiones disponibles' {
+  stub_versions_api
+  versions_fixture='{"versions":[],"internal":"internal-versions-detail"}'
+
+  run deploy shareholders --dry-run
+
+  assert $state equals 1
+  assert "$output" contains 'No se encontraron versiones disponibles'
+  assert "$output" does_not_contain 'Response recibido:'
+  assert "$output" does_not_contain 'internal-versions-detail'
+}
+
+@test 'deploy muestra las diez primeras versiones de un JSON multilínea' {
+  stub_versions_api
+  versions_fixture='{
+  "versions": [
+    "10.0.0-rc.1",
+    "1.0.2",
+    "1.0.1",
+    "1.0.0",
+    "0.18.1",
+    "0.18.0",
+    "0.17.5",
+    "0.17.4",
+    "0.17.3",
+    "0.17.2",
+    "0.17.1"
+  ]
+}'
+
+  run deploy shareholders --dry-run
+
+  assert $state equals 0
+  assert "$output" contains 'Versión seleccionada: 10.0.0-rc.1'
+  assert "$output" contains '0.17.2'
+  assert "$output" does_not_contain '0.17.1'
+}
+
+@test 'deploy valida contexto y lanza cada entorno con el contrato API v1' {
+  stub_deployment_api
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 0
+  assert "$output" contains 'Exitosos: 2'
+  assert "$output" contains '930157'
+
+  run jq -se '
+    length == 5 and
+    .[0].url == "https://example.test/api/v1/resources/service/4506/versions?environment=1858" and
+    [.[1:][] | .method] == ["POST", "POST", "POST", "POST"] and
+    [.[1:][] | .url] == [
+      "https://example.test/api/v1/resources/deployment/context",
+      "https://example.test/api/v1/resources/deployment/launch",
+      "https://example.test/api/v1/resources/deployment/context",
+      "https://example.test/api/v1/resources/deployment/launch"
+    ] and
+    .[1].payload == {stage:"base",application_id:138,service_id:4506,environment_id:1858,version:"1.0.2",description:"deploy v1.0.2"} and
+    .[2].payload == {application_id:138,service_id:4506,environment_id:1858,version:"1.0.2",description:"deploy v1.0.2",flyway_mode:"disabled"} and
+    .[3].payload.environment_id == 1891 and .[4].payload.environment_id == 1891
+  ' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy no lanza cuando context devuelve un error HTTP' {
+  stub_deployment_api
+  context_status=400
+  context_body='{"detail":"invalid context"}'
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'Fallidos: 2'
+  assert "$output" contains 'Status: 400'
+  run jq -se '[.[] | select(.url | endswith("/launch"))] | length == 0' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy no lanza cuando context requiere un paso distinto de launch' {
+  stub_deployment_api
+  context_body='{"next":"approval","context":{}}'
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'Fallidos: 2'
+  run jq -se '[.[] | select(.url | endswith("/launch"))] | length == 0' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy no lanza si context devuelve HTML con HTTP 200' {
+  stub_deployment_api
+  context_body='<!doctype html><html></html>'
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'Fallidos: 2'
+  run jq -se '[.[] | select(.url | endswith("/launch"))] | length == 0' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy devuelve error si launch falla solo en uno de los entornos' {
+  stub_deployment_api
+  fail_qa=true
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'Exitosos: 1'
+  assert "$output" contains 'Fallidos: 1'
+  assert "$output" contains 'Status: 500'
+}
+
+@test 'deploy no considera exitoso un launch sin respuesta RUNNING válida' {
+  stub_deployment_api
+  launch_body='<!doctype html><html></html>'
+  launch_status=200
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'Exitosos: 0'
+  assert "$output" contains 'Fallidos: 2'
+}
+
+@test 'deploy aborta el resto de entornos ante un 401' {
+  stub_deployment_api
+  context_status=401
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  assert "$output" contains 'API token inválido o expirado'
+  run jq -se 'length == 2' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy aborta sin launch si falla el transporte aunque se reciba HTTP 200' {
+  stub_deployment_api
+  request_exit=28
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  run jq -se 'length == 2' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy escapa la descripción como JSON y como argumento del shell' {
+  stub_deployment_api
+  description=$'Hotfix "QA" y \'comillas\' \\ ruta\nnueva línea $(false)'
+
+  function deploy_description() {
+    deploy shareholders@1.0.2 --description "$description"
+  }
+  run deploy_description
+
+  assert "$output" contains 'Exitosos: 2'
+  assert $state equals 0
+  function check_descriptions() {
+    jq -se --arg expected "$description" '[.[1:][] | .payload.description == $expected] | all' "$requests_file"
+  }
+  run check_descriptions
+  assert "$output" same_as 'true'
+  assert $state equals 0
+}
+
+@test 'deploy dry-run resume cada entorno sin JSON crudo ni POST' {
+  stub_deployment_api
+  function preview_deploy() {
+    setopt local_options no_typeset_silent
+    deploy shareholders@1.0.2 --dry-run
+  }
+
+  run preview_deploy
+
+  assert $state equals 0
+  assert "$output" contains 'Development (ID: 1858)'
+  assert "$output" contains 'Quality Assurance (ID: 1891)'
+  assert "$output" contains 'Contexto: base; lanzamiento solo si next=launch'
+  assert "$output" contains 'Flyway: disabled'
+  assert "$output" does_not_contain 'CONTEXT_PAYLOAD='
+  assert "$output" does_not_contain 'LAUNCH_PAYLOAD='
+  assert "$output" does_not_contain '"application_id"'
+  assert "$output" does_not_contain '"stage"'
+  run jq -se 'length == 1 and .[0].method == "GET"' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy mantiene la salida limpia aunque typesetsilent esté desactivado' {
+  stub_deployment_api
+  function clean_deploy() {
+    setopt local_options no_typeset_silent
+    deploy shareholders@1.0.2
+    local result=$?
+    print -r -- "typesetsilent=${options[typesetsilent]}"
+    return "$result"
+  }
+
+  run clean_deploy
+
+  assert $state equals 0
+  assert "$output" contains 'Deployment iniciado en Development (ID: 930157, RUNNING)'
+  assert "$output" contains 'Deployment iniciado en Quality Assurance (ID: 930157, RUNNING)'
+  assert "$output" contains 'Exitosos: 2'
+  assert "$output" contains 'typesetsilent=off'
+  assert "$output" does_not_contain 'RESPONSE='
+  assert "$output" does_not_contain 'CONTEXT_PAYLOAD='
+  assert "$output" does_not_contain 'LAUNCH_PAYLOAD='
+  assert "$output" does_not_contain 'DEPLOY_STAGE='
+  assert "$output" does_not_contain 'HTTP_STATUS:'
+  assert "$output" does_not_contain '"next"'
+  assert "$output" does_not_contain '"aws_ref"'
+}
+
+@test 'deploy no envía POST si falla la construcción del payload de launch' {
+  stub_deployment_api
+  function jq() {
+    if [[ "$1" == -c && "$2" == 'del(.stage)'* ]]; then
+      return 17
+    fi
+    command jq "$@"
+  }
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  run jq -se 'length == 1' "$requests_file"
+  assert $state equals 0
+}
+
+@test 'deploy rechaza HTML durante la validación aunque devuelva HTTP 200' {
+  stub_deployment_api
+  validation_type='text/html'
+
+  run deploy shareholders@1.0.2
+
+  assert $state equals 1
+  run jq -se 'length == 1' "$requests_file"
+  assert $state equals 0
 }

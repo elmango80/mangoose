@@ -2,6 +2,7 @@
 
 # Función para desplegar servicios en Quicksilver a múltiples entornos
 function deploy() {
+  setopt local_options typeset_silent
   local VERSION=""
   local SERVICE=""
   local SERVICE_ID=""
@@ -248,20 +249,28 @@ function deploy() {
     return 1
   fi
   
+  if ! command -v jq > /dev/null 2>&1; then
+    msg "Error: Se requiere jq para procesar la API de deployment" --error
+    return 1
+  fi
+
   local TOKEN=""
 
   # Función interna para validar el API token contra Quicksilver.
-  # Usamos /cd/api/deployment/new (GET) porque es el mismo endpoint que la app
-  # ods-dcw-ui usa para validar el Bearer token y devuelve 200 si es válido.
+  # Usamos el listado de versiones (GET) de la API v1 con el primer entorno
+  # de la aplicación y comprobamos HTTP 200 y el tipo de contenido JSON.
   validate_deploy_token() {
     local token="$1"
+    local auth_header="Authorization: Bearer $token"
+    local validation_url="${DEPLOY_SERVER_URL}/api/v1/resources/service/$SERVICE_ID/versions?environment=${DEPLOYMENT_ORDER[1]}"
     local tmp_file=$(mktemp)
     turn_the_command \
       --message "Verificando credenciales" \
-      --command "curl -s -o /dev/null -w '%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/deployment/new' -H 'accept: application/json' -H 'Authorization: Bearer $token' > $tmp_file" > /dev/null
+      --command "curl -sS -o /dev/null -w '%{http_code}:%{content_type}' ${(q)validation_url} -H 'accept: application/json' -H ${(q)auth_header} > ${(q)tmp_file}" > /dev/null
+    local request_status=$?
     local result=$(cat "$tmp_file")
     rm -f "$tmp_file"
-    [[ "$result" == "200" ]]
+    [[ "$request_status" -eq 0 && "$result" == 200:application/json* ]]
   }
 
   # Función interna para actualizar un token en el archivo .env
@@ -299,17 +308,6 @@ function deploy() {
     fi
   }
 
-  # Resolver el token siempre: incluso en dry-run necesitamos llamar a
-  # /cd/api/versions/... para listar versiones disponibles. Si el token
-  # almacenado es válido se reutiliza; si no, se solicita uno nuevo y se
-  # persiste en .env (mismo flujo que un deploy real).
-  if [[ -n "$DEPLOY_TOKEN" ]] && validate_deploy_token "$DEPLOY_TOKEN"; then
-    TOKEN="$DEPLOY_TOKEN"
-  else
-    prompt_deploy_token || return 1
-    update_env_token "DEPLOY_TOKEN" "$TOKEN"
-  fi
-
   # Verificar que DEPLOY_ENVIRONMENTS esté configurado
   if [[ -z "${DEPLOY_ENVIRONMENTS}" ]] || [[ ${#DEPLOY_ENVIRONMENTS[@]} -eq 0 ]]; then
     msg "Error: Variable DEPLOY_ENVIRONMENTS no configurada" --error
@@ -339,6 +337,17 @@ function deploy() {
     return 1
   fi
   
+  # Resolver el token siempre: incluso en dry-run necesitamos llamar a
+  # /api/v1/resources/service/.../versions para listar versiones. Si el token
+  # almacenado es válido se reutiliza; si no, se solicita uno nuevo y se
+  # persiste en .env (mismo flujo que un deploy real).
+  if [[ -n "$DEPLOY_TOKEN" ]] && validate_deploy_token "$DEPLOY_TOKEN"; then
+    TOKEN="$DEPLOY_TOKEN"
+  else
+    prompt_deploy_token || return 1
+    update_env_token "DEPLOY_TOKEN" "$TOKEN"
+  fi
+
   # Determinar el modo de operación según si se especificó versión
   if [ -n "$SPECIFIC_VERSION" ]; then
     # Modo con versión específica: service@latest o service@0.52.1
@@ -356,7 +365,7 @@ function deploy() {
     local versions_tmp=$(mktemp)
     turn_the_command \
       --message "Obteniendo versiones disponibles" \
-      --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/cd/api/versions/$SERVICE_ID/$FIRST_ENV' \
+      --command "curl -s -w '\nHTTP_STATUS:%{http_code}' '${DEPLOY_SERVER_URL}/api/v1/resources/service/$SERVICE_ID/versions?environment=$FIRST_ENV' \
         -H 'accept: application/json, text/plain, */*' \
         -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
         -H 'priority: u=1, i' \
@@ -387,13 +396,10 @@ function deploy() {
 
     # Extraer el array de versiones y convertirlo a lista
     local -a VERSIONS
-    VERSIONS=($(echo "$VERSIONS_BODY" | grep -o '"versions":\s*\[[^]]*\]' | sed 's/"versions":\s*\[//g' | sed 's/\]//g' | tr ',' '\n' | sed 's/"//g' | sed 's/^ *//g' | head -10))
+    VERSIONS=($(echo "$VERSIONS_BODY" | tr -d '\r\n' | grep -o '"versions":[[:space:]]*\[[^]]*\]' | sed 's/"versions":[[:space:]]*\[//g' | sed 's/\]//g' | tr ',' '\n' | sed 's/"//g' | sed 's/^ *//g' | head -10))
 
     if [ ${#VERSIONS[@]} -eq 0 ]; then
       msg "No se encontraron versiones disponibles" --warning
-      msg --blank
-      msg "Response recibido:"
-      msg "$VERSIONS_BODY"
       return 1
     fi
 
@@ -431,56 +437,81 @@ function deploy() {
 
   for ENV_ID in "${DEPLOYMENT_ORDER[@]}"; do
     local ENV_NAME="${ENVIRONMENTS[$ENV_ID]}"
+    local CONTEXT_PAYLOAD
+    CONTEXT_PAYLOAD=$(jq -cn \
+      --argjson application_id "$APP_ID" --argjson service_id "$SERVICE_ID" --argjson environment_id "$ENV_ID" \
+      --arg version "$VERSION" --arg description "$DESCRIPTION" \
+      '{stage:"base",application_id:$application_id,service_id:$service_id,environment_id:$environment_id,version:$version,description:$description}') || return 1
+    local LAUNCH_PAYLOAD
+    LAUNCH_PAYLOAD=$(jq -c 'del(.stage) + {flyway_mode:"disabled"}' <<< "$CONTEXT_PAYLOAD") || return 1
     if [ "$DRY_RUN" = true ]; then
       turn_the_command --command "sleep 1" --message "Desplegando en $ENV_NAME"
       # Modo dry-run: solo mostrar lo que se haría
-      msg "Payload: {" --tab 1 --dim
-      msg "application: $APP_ID ($APP_NAME)" --tab 2 --dim 
-      msg "service: $SERVICE_ID" --tab 2 --dim
-      msg "environment: $ENV_ID" --tab 2 --dim
-      msg "version: $VERSION" --tab 2 --dim
-      msg "description: $DESCRIPTION" --tab 2 --dim
-      msg "}" --tab 1 --dim
+      msg "Entorno: $ENV_NAME (ID: $ENV_ID)" --tab 1 --dim
+      msg "Contexto: base; lanzamiento solo si next=launch" --tab 1 --dim
+      msg "Versión: $VERSION; Flyway: disabled" --tab 1 --dim
       SUCCESSFUL_DEPLOYMENTS+=("$ENV_NAME (dry-run)")
     else
       # Modo normal: ejecutar el deployment real
-      local RESPONSE=$(turn_the_command \
-        --message "Desplegando en $ENV_NAME" \
-        --command "curl -s -w '\nHTTP_STATUS:%{http_code}' -X POST '${DEPLOY_SERVER_URL}/cd/api/deployment/new' \
-          -H 'accept-language: en-US,en;q=0.9,es;q=0.8' \
-          -H 'accept: application/json, text/plain, */*' \
-          -H 'content-type: application/json' \
-          -H 'priority: u=1, i' \
-          -H 'Authorization: Bearer $TOKEN' \
-          --data-raw '{\"application\":${APP_ID},\"service\":$SERVICE_ID,\"environment\":$ENV_ID,\"version\":\"$VERSION\",\"description\":\"$DESCRIPTION\",\"flyway_mode\":\"disabled\",\"form_kind\":\"StepFunctions\"}'")
-      
-      # Extraer el código HTTP
-      local HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-      local BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS/d')
+      local DEPLOY_STAGE
+      for DEPLOY_STAGE in context launch; do
+        local PAYLOAD="$CONTEXT_PAYLOAD"
+        [[ "$DEPLOY_STAGE" == launch ]] && PAYLOAD="$LAUNCH_PAYLOAD"
+        local REQUEST_URL="${DEPLOY_SERVER_URL}/api/v1/resources/deployment/$DEPLOY_STAGE"
+        local AUTH_HEADER="Authorization: Bearer $TOKEN"
+        local RESPONSE
+        RESPONSE=$(turn_the_command \
+          --message "$DEPLOY_STAGE en $ENV_NAME" \
+          --command "curl -sS -w '\nHTTP_STATUS:%{http_code}' -X POST ${(q)REQUEST_URL} \
+            -H 'accept: application/json' \
+            -H 'content-type: application/json' \
+            -H ${(q)AUTH_HEADER} \
+            --data-raw ${(q)PAYLOAD}")
+        local REQUEST_STATUS=$?
 
-      # Analizar el tipo de error
-      if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
-        SUCCESSFUL_DEPLOYMENTS+=("$ENV_NAME")
-      elif [ "$HTTP_STATUS" = "000" ]; then
-        ABORT_DEPLOY=true
-        FAILED_DEPLOYMENTS+=("$ENV_NAME")
-        msg "No se pudo conectar al servidor de Quicksilver." --error --no-icon --tab 1
-        msg "Verifica que estas conectado a la VPN y que el servidor esta accesible" --dim --tab 1
-        break
-      else
-        FAILED_DEPLOYMENTS+=("$ENV_NAME")
-        # Detectar errores específicos
-        if [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
+        # Extraer el código HTTP
+        local HTTP_STATUS="${RESPONSE##*$'\nHTTP_STATUS:'}"
+        local BODY="${RESPONSE%$'\nHTTP_STATUS:'*}"
+        [[ "$REQUEST_STATUS" -ne 0 ]] && HTTP_STATUS="000"
+
+        # Analizar el tipo de error
+        if [[ "$HTTP_STATUS" == 2[0-9][0-9] ]]; then
+          if [[ "$DEPLOY_STAGE" == context ]]; then
+            if ! jq -e '.next == "launch"' <<< "$BODY" > /dev/null 2>&1; then
+              FAILED_DEPLOYMENTS+=("$ENV_NAME")
+              msg "El contexto no permite lanzar el deployment en $ENV_NAME" --error
+              break
+            fi
+          elif jq -e '(.id | type == "number") and (.id > 0) and (.status == "RUNNING")' <<< "$BODY" > /dev/null 2>&1; then
+            SUCCESSFUL_DEPLOYMENTS+=("$ENV_NAME")
+            msg "Deployment iniciado en $ENV_NAME (ID: $(jq -r '.id' <<< "$BODY"), RUNNING)" --success
+          else
+            FAILED_DEPLOYMENTS+=("$ENV_NAME")
+            msg "Respuesta de launch no válida en $ENV_NAME; comprueba Quicksilver antes de reintentar" --error
+            break
+          fi
+        elif [ "$HTTP_STATUS" = "000" ]; then
           ABORT_DEPLOY=true
-          msg "API token inválido o expirado" --error
-          msg "El token de autenticación ha expirado o es inválido." --dim
-          msg "Obtén uno nuevo en ${DEPLOY_SERVER_URL}/user-profile/ y actualiza DEPLOY_TOKEN en .env." --dim
+          FAILED_DEPLOYMENTS+=("$ENV_NAME")
+          msg "No se pudo conectar al servidor de Quicksilver." --error --no-icon --tab 1
+          msg "Verifica que estas conectado a la VPN y que el servidor esta accesible" --dim --tab 1
           break
         else
-          msg "Error en deployment en $ENV_NAME" --error
-          msg "Status: $HTTP_STATUS" --dim
+          FAILED_DEPLOYMENTS+=("$ENV_NAME")
+          # Detectar errores específicos
+          if [ "$HTTP_STATUS" = "401" ] || [ "$HTTP_STATUS" = "403" ]; then
+            ABORT_DEPLOY=true
+            msg "API token inválido o expirado" --error
+            msg "El token de autenticación ha expirado o es inválido." --dim
+            msg "Obtén uno nuevo en ${DEPLOY_SERVER_URL}/user-profile/ y actualiza DEPLOY_TOKEN en .env." --dim
+            break
+          else
+            msg "Error en $DEPLOY_STAGE en $ENV_NAME" --error
+            msg "Status: $HTTP_STATUS" --dim
+          fi
+          break
         fi
-      fi
+      done
       
       # Si hubo un error crítico (401/403), no continuar
       if [[ $ABORT_DEPLOY = true ]]; then
@@ -510,4 +541,5 @@ function deploy() {
     done
   fi
   msg "========================================"
+  (( ${#FAILED_DEPLOYMENTS[@]} == 0 ))
 }

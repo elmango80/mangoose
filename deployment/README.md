@@ -122,6 +122,13 @@ El token se almacena en el archivo `.env` (`DEPLOY_TOKEN`) y se reutiliza autom�
 - **401/403** - Token expirado (aborta)
 - **000** - Sin conexión (aborta)
 - **Otros** - Continúa con siguiente entorno
+- Si falla algún entorno, el comando termina con código 1.
+
+Cada entorno utiliza `POST /api/v1/resources/deployment/context` y solo ejecuta
+`POST /api/v1/resources/deployment/launch` si el contexto devuelve `next: "launch"`.
+Un resultado exitoso indica que el deployment se ha iniciado (`RUNNING`), no que
+haya finalizado. El modo `--dry-run` muestra un resumen por entorno (ID, contexto,
+versión y modo Flyway), sin JSON crudo ni enviar esos POST.
 
 ## Dependencias
 
@@ -131,6 +138,7 @@ El token se almacena en el archivo `.env` (`DEPLOY_TOKEN`) y se reutiliza autom�
 - `core/spinners.zsh` - Para feedback
 - `core/utils.zsh` - Para select_option
 - `curl` - Para API calls
+- `jq` - Para construir payloads JSON y validar las respuestas
 
 ### Variables de Entorno
 
@@ -206,17 +214,29 @@ Fallidos: 0
 
 ### Formato del Payload
 
-El payload enviado al servidor:
+Ejemplo de payload para `POST /api/v1/resources/deployment/context`:
 
 ```json
 {
-  "application": <APP_ID>,
-  "service": <SERVICE_ID>,
-  "environment": <ENV_ID>,
-  "version": "<VERSION>",
-  "description": "<DESCRIPTION>",
-  "flyway_mode": "disabled",
-  "form_kind": "StepFunctions"
+  "stage": "base",
+  "application_id": 138,
+  "service_id": 4506,
+  "environment_id": 1891,
+  "version": "1.0.2",
+  "description": "deploy v1.0.2"
+}
+```
+
+Si devuelve `next: "launch"`, se envía a `POST /api/v1/resources/deployment/launch`:
+
+```json
+{
+  "application_id": 138,
+  "service_id": 4506,
+  "environment_id": 1891,
+  "version": "1.0.2",
+  "description": "deploy v1.0.2",
+  "flyway_mode": "disabled"
 }
 ```
 
@@ -237,14 +257,3 @@ El payload enviado al servidor:
 - ✅ Manejo robusto de errores
 - ✅ Feedback visual con spinners
 - ✅ Resumen detallado al finalizar
-  "service": <SERVICE_ID>,
-  "environment": <ENV_ID>,
-  "version": "<VERSION>",
-  "description": "deploy v<VERSION>",
-  "flyway_mode": "disabled",
-  "form_kind": "StepFunctions"
-  }
-
-```
-
-```
